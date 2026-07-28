@@ -3,6 +3,8 @@ node_modules/
 dist/
 dist-ssr/
 .vite/
+.cache/
+.npm/
 *.tsbuildinfo
 
 # Environment files and local configuration
@@ -22,6 +24,11 @@ lerna-debug.log*
 coverage/
 playwright-report/
 test-results/
+*.tmp
+*.temp
+*.bak
+*.orig
+*~
 
 # Editor and operating-system files
 .vscode/*
@@ -29,6 +36,7 @@ test-results/
 .idea/
 .DS_Store
 Thumbs.db
+Desktop.ini
 *.suo
 *.ntvs*
 *.njsproj

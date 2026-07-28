@@ -28,42 +28,42 @@ const graduates: Graduate[] = [
   {
     number: '01',
     name: '优秀学生',
-    department: '学院 / 专业信息待补充',
+    department: '长江师范学院 · 2017届',
     honor: '优秀毕业生',
     message: '将课堂上的求知与热爱，带往更广阔的山海。',
   },
   {
     number: '02',
     name: '优秀学生',
-    department: '学院 / 专业信息待补充',
+    department: '长江师范学院 · 2017届',
     honor: '励志成长之星',
     message: '以笃行回应青春，以责任照亮前路。',
   },
   {
     number: '03',
     name: '优秀学生',
-    department: '学院 / 专业信息待补充',
+    department: '长江师范学院 · 2017届',
     honor: '学业卓越之星',
     message: '以好学之心守住初心，以实干之姿奔赴未来。',
   },
   {
     number: '04',
     name: '优秀学生',
-    department: '学院 / 专业信息待补充',
+    department: '长江师范学院 · 2017届',
     honor: '实践服务之星',
     message: '让青春的脚步，始终与时代的脉搏同频。',
   },
   {
     number: '05',
     name: '优秀学生',
-    department: '学院 / 专业信息待补充',
+    department: '长江师范学院 · 2017届',
     honor: '创新创业之星',
     message: '怀揣敢为人先的勇气，书写自己的答案。',
   },
   {
     number: '06',
     name: '优秀学生',
-    department: '学院 / 专业信息待补充',
+    department: '长江师范学院 · 2017届',
     honor: '全面发展之星',
     message: '此去星辰大海，仍心系母校与同窗。',
   },
@@ -127,7 +127,7 @@ document.querySelector<HTMLDivElement>('#app')!.innerHTML = `
       <div class="hero-content">
         <p class="eyebrow"><span></span> CLASS OF 2017 · TEN YEARS ON <span></span></p>
         <p class="hero-school">长江师范学院</p>
-        <h1 id="page-title">2017届优秀毕业生十周年纪念</h1>
+        <h1 id="page-title">2017届优秀毕业生<br />十周年纪念</h1>
         <p class="hero-subtitle">2017 — 2027 · 以青春作序，致敬一路闪耀的你们</p>
         <div class="hero-rule" aria-hidden="true"><i></i></div>
         <p class="hero-note">愿你们奔赴辽阔天地，始终葆有少年般澄澈的眼睛与热望。</p>
@@ -150,7 +150,6 @@ document.querySelector<HTMLDivElement>('#app')!.innerHTML = `
           <p class="heading-kicker">HONOR ROLL</p>
           <h2 id="honor-title">优秀毕业生名录</h2>
         </div>
-        <p class="heading-note">以下为展示占位。请以经确认的官方名单、院系、荣誉与照片替换。</p>
       </div>
       <div class="graduate-grid">
         ${graduateCards}
