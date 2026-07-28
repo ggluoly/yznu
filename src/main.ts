@@ -8,7 +8,59 @@ type Graduate = {
   message: string
 }
 
+const GRADUATION_YEAR = 2017
+
 const assetUrl = (filename: string) => `${import.meta.env.BASE_URL}${filename}`
+
+const getChinaYear = (date: Date) =>
+  Number(
+    new Intl.DateTimeFormat('en-US', {
+      year: 'numeric',
+      timeZone: 'Asia/Shanghai',
+    }).format(date),
+  )
+
+const getCurrentYear = async () => {
+  try {
+    const response = await fetch(window.location.href.split('#')[0], {
+      method: 'HEAD',
+      cache: 'no-store',
+    })
+    const serverDate = response.headers.get('Date')
+
+    if (response.ok && serverDate) {
+      const networkDate = new Date(serverDate)
+
+      if (!Number.isNaN(networkDate.getTime())) {
+        return getChinaYear(networkDate)
+      }
+    }
+  } catch {
+    // Offline previews use the browser clock as a graceful fallback.
+  }
+
+  return getChinaYear(new Date())
+}
+
+const toChineseNumber = (value: number) => {
+  const digits = ['零', '一', '二', '三', '四', '五', '六', '七', '八', '九']
+
+  if (value < 10) {
+    return digits[value]
+  }
+
+  if (value < 20) {
+    return `十${value % 10 === 0 ? '' : digits[value % 10]}`
+  }
+
+  if (value < 100) {
+    return `${digits[Math.floor(value / 10)]}十${value % 10 === 0 ? '' : digits[value % 10]}`
+  }
+
+  return String(value)
+}
+
+let activeNavigationObserver: IntersectionObserver | undefined
 
 const escapeHtml = (value: string) =>
   value.replace(/[&<>"']/g, (character) => {
@@ -69,9 +121,16 @@ const graduates: Graduate[] = [
   },
 ]
 
-const graduateCards = graduates
-  .map(
-    ({ number, name, department, honor, message }) => `
+const renderPage = (currentYear: number) => {
+  const anniversaryYears = Math.max(0, currentYear - GRADUATION_YEAR)
+  const chineseYears = toChineseNumber(anniversaryYears)
+  const yearsLabel = `${chineseYears}年`
+  const anniversaryLabel = `${chineseYears}周年`
+  const yearRange = `${GRADUATION_YEAR} — ${currentYear}`
+  const englishYears = `${anniversaryYears} ${anniversaryYears === 1 ? 'YEAR' : 'YEARS'} ON`
+  const graduateCards = graduates
+    .map(
+      ({ number, name, department, honor, message }) => `
       <article class="graduate-card">
         <div class="card-topline">
           <span class="graduate-number">${escapeHtml(number)}</span>
@@ -85,10 +144,17 @@ const graduateCards = graduates
         <p class="card-department">${escapeHtml(department)}</p>
         <p class="card-message">${escapeHtml(message)}</p>
       </article>`,
-  )
-  .join('')
+    )
+    .join('')
 
-document.querySelector<HTMLDivElement>('#app')!.innerHTML = `
+  document.title = `2017届优秀毕业生${anniversaryLabel}纪念 | 长江师范学院`
+  document
+    .querySelector<HTMLMetaElement>('meta[name="description"]')
+    ?.setAttribute('content', `长江师范学院2017届优秀毕业生${anniversaryLabel}纪念展示页`)
+  document.documentElement.dataset.currentYear = String(currentYear)
+  activeNavigationObserver?.disconnect()
+
+  document.querySelector<HTMLDivElement>('#app')!.innerHTML = `
   <a class="skip-link" href="#main-content">跳到主要内容</a>
   <header class="site-header">
     <div class="wrapper head" id="head">
@@ -109,7 +175,7 @@ document.querySelector<HTMLDivElement>('#app')!.innerHTML = `
               <ul>
                 <li class="links i1 is-current"><a href="#home" aria-current="location">首页</a></li>
                 <li class="links i2"><a href="#honor-roll">优秀毕业生</a></li>
-                <li class="links i3"><a href="#memory">十年回望</a></li>
+                <li class="links i3"><a href="#memory">${yearsLabel}回望</a></li>
                 <li class="links i4"><a href="#tribute">致敬寄语</a></li>
                 <li class="links i5"><a href="https://www.yznu.edu.cn/" target="_blank" rel="noopener noreferrer">长师官网</a></li>
               </ul>
@@ -125,10 +191,10 @@ document.querySelector<HTMLDivElement>('#app')!.innerHTML = `
       <div class="hero-pattern pattern-left" aria-hidden="true"></div>
       <div class="hero-pattern pattern-right" aria-hidden="true"></div>
       <div class="hero-content">
-        <p class="eyebrow"><span></span> CLASS OF 2017 · TEN YEARS ON <span></span></p>
+        <p class="eyebrow"><span></span> CLASS OF ${GRADUATION_YEAR} · ${englishYears} <span></span></p>
         <p class="hero-school">长江师范学院</p>
-        <h1 id="page-title">2017届优秀毕业生<br />十周年纪念</h1>
-        <p class="hero-subtitle">2017 — 2027 · 以青春作序，致敬一路闪耀的你们</p>
+        <h1 id="page-title">${GRADUATION_YEAR}届优秀毕业生<br />${anniversaryLabel}纪念</h1>
+        <p class="hero-subtitle">${yearRange} · 以青春作序，致敬一路闪耀的你们</p>
         <div class="hero-rule" aria-hidden="true"><i></i></div>
         <p class="hero-note">愿你们奔赴辽阔天地，始终葆有少年般澄澈的眼睛与热望。</p>
       </div>
@@ -140,8 +206,8 @@ document.querySelector<HTMLDivElement>('#app')!.innerHTML = `
 
     <section class="intro-section" aria-label="毕业纪念引言">
       <div class="section-label">A MOMENT TO REMEMBER</div>
-      <p>十年，从课堂的晨光到江畔的晚风，从毕业出发到今日回望，<br class="desktop-break" />你们以勤勉、热爱与担当，为青春与人生写下了熠熠生辉的注脚。</p>
-      <span class="intro-signature">- 2017 — 2027 · 毕业十周年纪念 -</span>
+      <p>${yearsLabel}，从课堂的晨光到江畔的晚风，从毕业出发到今日回望，<br class="desktop-break" />你们以勤勉、热爱与担当，为青春与人生写下了熠熠生辉的注脚。</p>
+      <span class="intro-signature">- ${yearRange} · 毕业${anniversaryLabel}纪念 -</span>
     </section>
 
     <section class="honor-section" id="honor-roll" aria-labelledby="honor-title">
@@ -159,17 +225,17 @@ document.querySelector<HTMLDivElement>('#app')!.innerHTML = `
     <section class="memory-section" id="memory" aria-labelledby="memory-title">
       <div class="memory-copy">
         <p class="heading-kicker">THE DAYS WE SHARED</p>
-        <h2 id="memory-title">十年砥砺，荣光不改</h2>
-        <p>十年，不只是时间的刻度。它是走出校园后的坚持与开拓，是将所学融入事业的担当，也是成长路上始终明亮的初心。</p>
+        <h2 id="memory-title">${yearsLabel}砥砺，荣光不改</h2>
+        <p>${yearsLabel}，不只是时间的刻度。它是走出校园后的坚持与开拓，是将所学融入事业的担当，也是成长路上始终明亮的初心。</p>
       </div>
       <ol class="memory-list">
         <li>
-          <span>2017</span>
+          <span>${GRADUATION_YEAR}</span>
           <strong>启程</strong>
           <p>带着师长嘱托与青春热望，踏上人生新征程。</p>
         </li>
         <li>
-          <span>十年</span>
+          <span>${yearsLabel}</span>
           <strong>成长</strong>
           <p>在各自的岗位上，成为更坚定、更丰盈的自己。</p>
         </li>
@@ -179,9 +245,9 @@ document.querySelector<HTMLDivElement>('#app')!.innerHTML = `
           <p>用每一份坚持，回应青春许下的期待。</p>
         </li>
         <li>
-          <span>2027</span>
+          <span>${currentYear}</span>
           <strong>致敬</strong>
-          <p>以毕业十周年为记，致敬一路成长与闪耀。</p>
+          <p>以毕业${anniversaryLabel}为记，致敬一路成长与闪耀。</p>
         </li>
       </ol>
     </section>
@@ -189,51 +255,63 @@ document.querySelector<HTMLDivElement>('#app')!.innerHTML = `
     <section class="tribute-section" id="tribute" aria-labelledby="tribute-title">
       <div class="tribute-frame">
         <p class="heading-kicker">IN HONOR OF EXCELLENCE</p>
-        <h2 id="tribute-title">十年砥砺初心<br />致敬优秀的你们</h2>
+        <h2 id="tribute-title">${yearsLabel}砥砺初心<br />致敬优秀的你们</h2>
         <p>愿每一份热爱皆有回响，愿每一程奋斗都绽放光芒。</p>
-        <span class="tribute-year">2017—2027</span>
+        <span class="tribute-year">${yearRange}</span>
       </div>
     </section>
   </main>
 
   <footer class="site-footer">
     <p><strong>长江师范学院</strong> · 重庆市涪陵区聚贤大道16号</p>
-    <p>CLASS OF 2017 · EXCELLENCE MEMORIAL · 2027</p>
+    <p>CLASS OF ${GRADUATION_YEAR} · EXCELLENCE MEMORIAL · ${currentYear}</p>
   </footer>
 `
 
-const navigationLinks = Array.from(
-  document.querySelectorAll<HTMLAnchorElement>('.anniversary-nav a[href^="#"]'),
-)
+  const navigationLinks = Array.from(
+    document.querySelectorAll<HTMLAnchorElement>('.anniversary-nav a[href^="#"]'),
+  )
 
-const setCurrentNavigation = (targetId: string) => {
-  navigationLinks.forEach((link) => {
-    const isCurrent = link.getAttribute('href') === `#${targetId}`
-    link.closest('li')?.classList.toggle('is-current', isCurrent)
+  const setCurrentNavigation = (targetId: string) => {
+    navigationLinks.forEach((link) => {
+      const isCurrent = link.getAttribute('href') === `#${targetId}`
+      link.closest('li')?.classList.toggle('is-current', isCurrent)
 
-    if (isCurrent) {
-      link.setAttribute('aria-current', 'location')
-    } else {
-      link.removeAttribute('aria-current')
-    }
-  })
+      if (isCurrent) {
+        link.setAttribute('aria-current', 'location')
+      } else {
+        link.removeAttribute('aria-current')
+      }
+    })
+  }
+
+  const observedSections = navigationLinks
+    .map((link) => document.querySelector<HTMLElement>(link.getAttribute('href') ?? ''))
+    .filter((section): section is HTMLElement => section !== null)
+
+  activeNavigationObserver = new IntersectionObserver(
+    (entries) => {
+      const activeEntry = entries
+        .filter((entry) => entry.isIntersecting)
+        .sort((first, second) => second.intersectionRatio - first.intersectionRatio)[0]
+
+      if (activeEntry) {
+        setCurrentNavigation(activeEntry.target.id)
+      }
+    },
+    { rootMargin: '-18% 0px -64%', threshold: [0.1, 0.35, 0.6] },
+  )
+
+  observedSections.forEach((section) => activeNavigationObserver?.observe(section))
 }
 
-const observedSections = navigationLinks
-  .map((link) => document.querySelector<HTMLElement>(link.getAttribute('href') ?? ''))
-  .filter((section): section is HTMLElement => section !== null)
+const localYear = Math.max(GRADUATION_YEAR, getChinaYear(new Date()))
+renderPage(localYear)
 
-const navigationObserver = new IntersectionObserver(
-  (entries) => {
-    const activeEntry = entries
-      .filter((entry) => entry.isIntersecting)
-      .sort((first, second) => second.intersectionRatio - first.intersectionRatio)[0]
+void getCurrentYear().then((networkYear) => {
+  const normalizedYear = Math.max(GRADUATION_YEAR, networkYear)
 
-    if (activeEntry) {
-      setCurrentNavigation(activeEntry.target.id)
-    }
-  },
-  { rootMargin: '-18% 0px -64%', threshold: [0.1, 0.35, 0.6] },
-)
-
-observedSections.forEach((section) => navigationObserver.observe(section))
+  if (normalizedYear !== Number(document.documentElement.dataset.currentYear)) {
+    renderPage(normalizedYear)
+  }
+})
