@@ -10,7 +10,9 @@
   "scripts": {
     "dev": "vite",
     "build": "tsc && vite build",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "sync:notion": "node scripts/sync-notion.mjs",
+    "sync:notion:optional": "node scripts/sync-notion.mjs --optional"
   },
   "devDependencies": {
     "typescript": "~6.0.2",

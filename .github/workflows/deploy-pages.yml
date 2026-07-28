@@ -35,7 +35,15 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
+      - name: Sync graduates from Notion
+        env:
+          NOTION_TOKEN: ${{ secrets.NOTION_TOKEN }}
+          NOTION_DATA_SOURCE_ID: ${{ vars.NOTION_DATA_SOURCE_ID }}
+        run: npm run sync:notion:optional
+
       - name: Build site
+        env:
+          VITE_VISITOR_API_URL: ${{ vars.VISITOR_API_URL }}
         run: npm run build
 
       - name: Configure GitHub Pages

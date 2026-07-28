@@ -1,0 +1,39 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "yznu-visitor-recorder",
+  "main": "src/index.js",
+  "compatibility_date": "2026-07-28",
+  "workers_dev": true,
+  "keep_vars": true,
+  "vars": {
+    "RETENTION_DAYS": "90"
+  },
+  "ratelimits": [
+    {
+      "name": "VISIT_RATE_LIMITER",
+      "namespace_id": "1001",
+      "simple": {
+        "limit": 60,
+        "period": 60
+      }
+    }
+  ],
+  "queues": {
+    "producers": [
+      {
+        "binding": "VISIT_QUEUE",
+        "queue": "yznu-visit-events"
+      }
+    ],
+    "consumers": [
+      {
+        "queue": "yznu-visit-events",
+        "max_batch_size": 10,
+        "max_batch_timeout": 30,
+        "max_retries": 5,
+        "dead_letter_queue": "yznu-visit-events-dlq",
+        "retry_delay": 60
+      }
+    ]
+  }
+}

@@ -1,0 +1,3 @@
+NOTION_VISITOR_TOKEN=replace_with_your_write_only_notion_token
+NOTION_VISITOR_DATA_SOURCE_ID=8f58fd9d-240e-431c-a82c-86a24245ba75
+ALLOWED_ORIGIN=https://graduates.example.edu.cn

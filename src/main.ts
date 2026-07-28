@@ -1,4 +1,6 @@
 import './style.css'
+import graduateData from './data/graduates.json'
+import { setupVisitorTracking } from './visitor-tracking'
 
 type Graduate = {
   number: string
@@ -6,6 +8,8 @@ type Graduate = {
   department: string
   honor: string
   message: string
+  photo: string | null
+  photoAlt: string | null
 }
 
 const GRADUATION_YEAR = 2017
@@ -75,51 +79,7 @@ const escapeHtml = (value: string) =>
     return entities[character]
   })
 
-// 真实优秀毕业生资料确认后，可在此替换展示占位内容。
-const graduates: Graduate[] = [
-  {
-    number: '01',
-    name: '优秀学生',
-    department: '长江师范学院 · 2017届',
-    honor: '优秀毕业生',
-    message: '将课堂上的求知与热爱，带往更广阔的山海。',
-  },
-  {
-    number: '02',
-    name: '优秀学生',
-    department: '长江师范学院 · 2017届',
-    honor: '励志成长之星',
-    message: '以笃行回应青春，以责任照亮前路。',
-  },
-  {
-    number: '03',
-    name: '优秀学生',
-    department: '长江师范学院 · 2017届',
-    honor: '学业卓越之星',
-    message: '以好学之心守住初心，以实干之姿奔赴未来。',
-  },
-  {
-    number: '04',
-    name: '优秀学生',
-    department: '长江师范学院 · 2017届',
-    honor: '实践服务之星',
-    message: '让青春的脚步，始终与时代的脉搏同频。',
-  },
-  {
-    number: '05',
-    name: '优秀学生',
-    department: '长江师范学院 · 2017届',
-    honor: '创新创业之星',
-    message: '怀揣敢为人先的勇气，书写自己的答案。',
-  },
-  {
-    number: '06',
-    name: '优秀学生',
-    department: '长江师范学院 · 2017届',
-    honor: '全面发展之星',
-    message: '此去星辰大海，仍心系母校与同窗。',
-  },
-]
+const graduates: Graduate[] = graduateData
 
 const renderPage = (currentYear: number) => {
   const anniversaryYears = Math.max(0, currentYear - GRADUATION_YEAR)
@@ -130,14 +90,18 @@ const renderPage = (currentYear: number) => {
   const englishYears = `${anniversaryYears} ${anniversaryYears === 1 ? 'YEAR' : 'YEARS'} ON`
   const graduateCards = graduates
     .map(
-      ({ number, name, department, honor, message }) => `
+      ({ number, name, department, honor, message, photo, photoAlt }) => `
       <article class="graduate-card">
         <div class="card-topline">
           <span class="graduate-number">${escapeHtml(number)}</span>
           <span class="card-mark" aria-hidden="true"></span>
         </div>
-        <div class="portrait" aria-label="毕业年份纪念徽章">
-          <span>2017</span>
+        <div class="portrait${photo ? ' has-photo' : ''}">
+          ${
+            photo
+              ? `<img src="${escapeHtml(assetUrl(photo))}" alt="${escapeHtml(photoAlt || `${name}纪念照片`)}" loading="lazy" decoding="async" />`
+              : `<span aria-label="毕业年份纪念徽章">${GRADUATION_YEAR}</span>`
+          }
         </div>
         <p class="card-honor">${escapeHtml(honor)}</p>
         <h3>${escapeHtml(name)}</h3>
@@ -307,6 +271,7 @@ const renderPage = (currentYear: number) => {
 
 const localYear = Math.max(GRADUATION_YEAR, getChinaYear(new Date()))
 renderPage(localYear)
+setupVisitorTracking()
 
 void getCurrentYear().then((networkYear) => {
   const normalizedYear = Math.max(GRADUATION_YEAR, networkYear)

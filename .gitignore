@@ -12,6 +12,9 @@ dist-ssr/
 .env.*
 !.env.example
 *.local
+public/graduates/
+worker/.dev.vars
+worker/.wrangler/
 
 # Logs, test reports, and browser artifacts
 logs/
