@@ -1,4 +1,4 @@
-import { mkdir, rm, writeFile } from 'node:fs/promises'
+import { mkdir, readFile, rm, writeFile } from 'node:fs/promises'
 import path from 'node:path'
 import process from 'node:process'
 
@@ -10,6 +10,7 @@ try {
 
 const NOTION_API_VERSION = '2026-03-11'
 const DATA_FILE = path.resolve('src/data/graduates.json')
+const PRESET_FILE = path.resolve('src/data/content-presets.json')
 const PHOTO_DIRECTORY = path.resolve('public/graduates')
 const token = process.env.NOTION_TOKEN?.trim()
 const dataSourceId = process.env.NOTION_DATA_SOURCE_ID?.trim().replace(/^collection:\/\//, '')
@@ -17,6 +18,29 @@ const optional = process.argv.includes('--optional')
 
 const fail = (message) => {
   throw new Error(message)
+}
+
+const contentPresets = JSON.parse(await readFile(PRESET_FILE, 'utf8'))
+
+const validatePresets = (values, label) => {
+  if (!Array.isArray(values) || values.length !== 10 || values.some((value) => typeof value !== 'string' || !value.trim())) {
+    fail(`${label} must contain exactly 10 non-empty strings.`)
+  }
+
+  return values
+}
+
+const honorPresets = validatePresets(contentPresets.honors, 'Honor presets')
+const messagePresets = validatePresets(contentPresets.messages, 'Message presets')
+
+const getPreset = (values, seed) => {
+  let hash = 2166136261
+
+  for (const character of seed) {
+    hash = Math.imul(hash ^ character.charCodeAt(0), 16777619)
+  }
+
+  return values[(hash >>> 0) % values.length]
 }
 
 const notionRequest = async (body) => {
@@ -167,13 +191,13 @@ const main = async () => {
     const name = getText(properties['姓名'])
     const college = getText(properties['学院'])
     const major = getText(properties['专业'])
-    const honor = getText(properties['荣誉称号'])
-    const message = getText(properties['寄语'])
+    const honor = getText(properties['荣誉称号']) || getPreset(honorPresets, `${page.id}:honor`)
+    const message = getText(properties['寄语']) || getPreset(messagePresets, `${page.id}:message`)
     const portraitAuthorized = properties['肖像授权']?.type === 'checkbox' && properties['肖像授权'].checkbox
     const photo = portraitAuthorized ? getPhoto(properties['照片']) : null
 
-    if (!name || !honor || !message) {
-      fail(`Published record ${page.id} is missing 姓名, 荣誉称号, or 寄语.`)
+    if (!name) {
+      fail(`Published record ${page.id} is missing 姓名.`)
     }
 
     const department = [college, major].filter(Boolean).join(' · ') || '长江师范学院 · 2017届'

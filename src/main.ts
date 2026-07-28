@@ -1,4 +1,5 @@
 import './style.css'
+import contentPresets from './data/content-presets.json'
 import graduateData from './data/graduates.json'
 import { setupVisitorTracking } from './visitor-tracking'
 
@@ -13,6 +14,8 @@ type Graduate = {
 }
 
 const GRADUATION_YEAR = 2017
+const HONOR_PRESETS = contentPresets.honors
+const MESSAGE_PRESETS = contentPresets.messages
 
 const assetUrl = (filename: string) => `${import.meta.env.BASE_URL}${filename}`
 
@@ -79,7 +82,24 @@ const escapeHtml = (value: string) =>
     return entities[character]
   })
 
-const graduates: Graduate[] = graduateData
+const getPreset = (values: string[], seed: string) => {
+  let hash = 2166136261
+
+  for (const character of seed) {
+    hash = Math.imul(hash ^ character.charCodeAt(0), 16777619)
+  }
+
+  return values[(hash >>> 0) % values.length]
+}
+
+const getDisplayText = (value: string | undefined, presets: string[], seed: string) =>
+  value?.trim() || getPreset(presets, seed)
+
+const graduates: Graduate[] = graduateData.map((graduate) => ({
+  ...graduate,
+  honor: getDisplayText(graduate.honor, HONOR_PRESETS, `${graduate.number}:${graduate.name}:honor`),
+  message: getDisplayText(graduate.message, MESSAGE_PRESETS, `${graduate.number}:${graduate.name}:message`),
+}))
 
 const renderPage = (currentYear: number) => {
   const anniversaryYears = Math.max(0, currentYear - GRADUATION_YEAR)
@@ -88,6 +108,9 @@ const renderPage = (currentYear: number) => {
   const anniversaryLabel = `${chineseYears}周年`
   const yearRange = `${GRADUATION_YEAR} — ${currentYear}`
   const englishYears = `${anniversaryYears} ${anniversaryYears === 1 ? 'YEAR' : 'YEARS'} ON`
+  const compactGrid = graduates.length > 0 && graduates.length < 3
+  const graduateGridClass = compactGrid ? ' graduate-grid--compact' : ''
+  const graduateGridStyle = compactGrid ? ` style="--graduate-count: ${graduates.length}"` : ''
   const graduateCards = graduates
     .map(
       ({ number, name, department, honor, message, photo, photoAlt }) => `
@@ -181,7 +204,7 @@ const renderPage = (currentYear: number) => {
           <h2 id="honor-title">优秀毕业生名录</h2>
         </div>
       </div>
-      <div class="graduate-grid">
+      <div class="graduate-grid${graduateGridClass}"${graduateGridStyle}>
         ${graduateCards}
       </div>
     </section>

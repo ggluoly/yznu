@@ -481,6 +481,11 @@ h2 {
   gap: 18px;
 }
 
+.graduate-grid--compact {
+  grid-template-columns: repeat(var(--graduate-count), minmax(0, calc((100% - 36px) / 3)));
+  justify-content: center;
+}
+
 .graduate-card {
   position: relative;
   min-height: 415px;
@@ -815,6 +820,10 @@ a:focus-visible {
     grid-template-columns: repeat(2, 1fr);
   }
 
+  .graduate-grid--compact {
+    grid-template-columns: repeat(var(--graduate-count), minmax(0, calc((100% - 18px) / 2)));
+  }
+
   .memory-section {
     grid-template-columns: 1fr;
     gap: 46px;
@@ -962,6 +971,10 @@ a:focus-visible {
   .graduate-grid {
     grid-template-columns: 1fr;
     gap: 14px;
+  }
+
+  .graduate-grid--compact {
+    grid-template-columns: 1fr;
   }
 
   .graduate-card {

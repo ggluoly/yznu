@@ -32,6 +32,7 @@ yznu/
 │  └─ sync-notion.mjs     # Notion 数据和授权照片同步脚本
 ├─ src/
 │  ├─ data/
+│  │  ├─ content-presets.json # 荣誉称号和寄语系统预设库
 │  │  └─ graduates.json   # 默认数据或 Notion 同步结果
 │  ├─ main.ts             # 页面结构、展示数据与导航状态
 │  └─ style.css           # 页面样式与响应式规则
@@ -104,13 +105,13 @@ Notion 数据源需要使用以下字段名称和类型：
 | 排序 | Number | 否 | 数字越小越靠前 |
 | 学院 | Rich text、Select | 否 | 所属学院 |
 | 专业 | Rich text、Select | 否 | 专业名称 |
-| 荣誉称号 | Rich text、Select | 是 | 正式荣誉名称 |
-| 寄语 | Rich text | 是 | 个人寄语或纪念文案 |
+| 荣誉称号 | Rich text、Select | 否 | 正式荣誉名称；为空时从 10 条系统预设中分配 |
+| 寄语 | Rich text | 否 | 个人寄语或纪念文案；为空时从 10 条系统预设中分配 |
 | 照片 | Files | 否 | 第一张图片作为人物照片 |
 | 发布状态 | Checkbox、Status、Select | 是 | 勾选或填写“已发布”才会同步 |
 | 肖像授权 | Checkbox | 否 | 只有勾选后才会下载并展示照片 |
 
-同步脚本只输出公开展示字段，不会将其他 Notion 属性写入页面。照片会在构建时下载到 `public/graduates/`，仅支持 HTTPS 的 JPG、PNG、WebP 和 AVIF，单张文件上限为 5 MiB。
+同步脚本只输出公开展示字段，不会将其他 Notion 属性写入页面。照片会在构建时下载到 `public/graduates/`，仅支持 HTTPS 的 JPG、PNG、WebP 和 AVIF，单张文件上限为 5 MiB。已发布记录只要求“姓名”必填；荣誉称号或寄语为空时，会分别从 `src/data/content-presets.json` 的 10 条预设中按学生记录稳定随机分配。相同 Notion 记录在预设库不变时会获得相同内容，避免每次构建后文案无故变化。
 
 ### GitHub 配置
 
