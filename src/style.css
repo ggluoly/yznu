@@ -433,7 +433,7 @@ h1 {
   text-align: center;
   background:
     linear-gradient(90deg, rgba(9, 25, 44, 0.88), rgba(21, 49, 78, 0.8), rgba(9, 25, 44, 0.88)),
-    url('/yznu-intro-bg.jpg') 50% 50% / cover no-repeat;
+    url('/yznu-intro-bg.jpg') 50% 68% / cover no-repeat;
 }
 
 .section-label {
