@@ -424,8 +424,16 @@ h1 {
 }
 
 .intro-section {
-  padding: 136px 0 128px;
+  position: relative;
+  width: 100%;
+  max-width: none;
+  overflow: hidden;
+  padding: 136px max(32px, calc((100% - 1120px) / 2)) 128px;
+  color: #fffdf6;
   text-align: center;
+  background:
+    linear-gradient(90deg, rgba(9, 25, 44, 0.88), rgba(21, 49, 78, 0.8), rgba(9, 25, 44, 0.88)),
+    url('/yznu-intro-bg.jpg') 50% 50% / cover no-repeat;
 }
 
 .section-label {
@@ -435,7 +443,7 @@ h1 {
 
 .intro-section > p {
   margin-bottom: 25px;
-  color: var(--ink);
+  color: #fffdf6;
   font-size: clamp(19px, 2vw, 26px);
   font-weight: 600;
   letter-spacing: 2px;
@@ -443,7 +451,7 @@ h1 {
 }
 
 .intro-signature {
-  color: var(--ink-soft);
+  color: rgba(255, 253, 246, 0.78);
   font-size: 13px;
   letter-spacing: 3px;
 }
@@ -946,7 +954,8 @@ a:focus-visible {
   }
 
   .intro-section {
-    padding: 86px 0;
+    width: 100%;
+    padding: 86px 20px;
   }
 
   .intro-section > p {
