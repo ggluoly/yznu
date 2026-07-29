@@ -55,6 +55,44 @@ const studentPageId = '11111111-2222-3333-4444-555555555555'
 const letterKey = createHash('sha256').update(studentPageId).digest('hex').slice(0, 32)
 const studentNumber = '20170001'
 const letterBody = '愿你始终保有求知的热忱，在更广阔的天地里笃定前行。'
+const letterRichText = [
+  {
+    plain_text: '愿你始终保有',
+    href: null,
+    annotations: {
+      bold: true,
+      italic: false,
+      strikethrough: false,
+      underline: false,
+      code: false,
+      color: 'red',
+    },
+  },
+  {
+    plain_text: '求知的热忱\n',
+    href: 'https://www.yznu.edu.cn/',
+    annotations: {
+      bold: false,
+      italic: true,
+      strikethrough: false,
+      underline: true,
+      code: false,
+      color: 'default',
+    },
+  },
+  {
+    plain_text: '在更广阔的天地里笃定前行。',
+    href: 'javascript:alert(1)',
+    annotations: {
+      bold: false,
+      italic: false,
+      strikethrough: false,
+      underline: false,
+      code: true,
+      color: 'yellow_background',
+    },
+  },
+]
 
 const createLetterRequest = (overrides = {}) =>
   new Request('https://visitor-api.example.edu.cn/api/letter/unlock', {
@@ -92,6 +130,7 @@ const notionStudentResponse = () => ({
           rich_text: [{ plain_text: studentNumber }],
         },
         信件正文: {
+          id: 'letter-property-id',
           type: 'rich_text',
           rich_text: [{ plain_text: letterBody }],
         },
@@ -109,6 +148,28 @@ const notionStudentResponse = () => ({
   has_more: false,
   next_cursor: null,
 })
+
+const notionLetterPropertyResponse = () => ({
+  results: letterRichText.map((richText) => ({
+    object: 'property_item',
+    type: 'rich_text',
+    rich_text: richText,
+  })),
+  has_more: false,
+  next_cursor: null,
+})
+
+const mockStudentApi = async (url) => {
+  const requestUrl = String(url)
+  const data = requestUrl.includes('/properties/')
+    ? notionLetterPropertyResponse()
+    : notionStudentResponse()
+
+  return new Response(JSON.stringify(data), {
+    status: 200,
+    headers: { 'Content-Type': 'application/json' },
+  })
+}
 
 test('queues one real browser page-load visit with the Cloudflare IP', async () => {
   const { env, messages } = createEnv()
@@ -192,11 +253,7 @@ test('unlocks a published student letter and queues only the student name', asyn
   const { env, messages } = createEnv()
   const originalFetch = globalThis.fetch
 
-  globalThis.fetch = async () =>
-    new Response(JSON.stringify(notionStudentResponse()), {
-      status: 200,
-      headers: { 'Content-Type': 'application/json' },
-    })
+  globalThis.fetch = mockStudentApi
 
   let response
   try {
@@ -209,7 +266,44 @@ test('unlocks a published student letter and queues only the student name', asyn
   assert.equal(response.status, 200)
   assert.equal(response.headers.get('Cache-Control'), 'no-store')
   assert.equal(result.studentName, '张同学')
-  assert.equal(result.letter, letterBody)
+  assert.deepEqual(result.letterRichText, [
+    {
+      text: '愿你始终保有',
+      href: null,
+      annotations: {
+        bold: true,
+        italic: false,
+        strikethrough: false,
+        underline: false,
+        code: false,
+        color: 'red',
+      },
+    },
+    {
+      text: '求知的热忱\n',
+      href: 'https://www.yznu.edu.cn/',
+      annotations: {
+        bold: false,
+        italic: true,
+        strikethrough: false,
+        underline: true,
+        code: false,
+        color: 'default',
+      },
+    },
+    {
+      text: '在更广阔的天地里笃定前行。',
+      href: null,
+      annotations: {
+        bold: false,
+        italic: false,
+        strikethrough: false,
+        underline: false,
+        code: true,
+        color: 'yellow_background',
+      },
+    },
+  ])
   assert.equal(result.signoff, '计算机学院教师团队')
   assert.equal(messages.length, 1)
   assert.equal(messages[0].eventType, '信件解锁')
@@ -223,11 +317,7 @@ test('rejects an incorrect student number without queuing a visit', async () => 
   const { env, messages } = createEnv()
   const originalFetch = globalThis.fetch
 
-  globalThis.fetch = async () =>
-    new Response(JSON.stringify(notionStudentResponse()), {
-      status: 200,
-      headers: { 'Content-Type': 'application/json' },
-    })
+  globalThis.fetch = mockStudentApi
 
   let response
   try {
@@ -249,11 +339,15 @@ test('uses the school name when the letter signoff is empty', async () => {
   responseData.results[0].properties.信件留名.rich_text = []
   const originalFetch = globalThis.fetch
 
-  globalThis.fetch = async () =>
-    new Response(JSON.stringify(responseData), {
+  globalThis.fetch = async (url) => {
+    const data = String(url).includes('/properties/')
+      ? notionLetterPropertyResponse()
+      : responseData
+    return new Response(JSON.stringify(data), {
       status: 200,
       headers: { 'Content-Type': 'application/json' },
     })
+  }
 
   let response
   try {

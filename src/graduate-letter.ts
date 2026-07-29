@@ -22,6 +22,61 @@ const getDeviceType = () => {
 const letterApiUrl = getLetterApiUrl()
 let initialized = false
 
+type LetterRichTextItem = {
+  text: string
+  href: string | null
+  annotations: {
+    bold: boolean
+    italic: boolean
+    strikethrough: boolean
+    underline: boolean
+    code: boolean
+    color: string
+  }
+}
+
+const getSafeHref = (value: string | null) => {
+  if (!value) return null
+
+  try {
+    const url = new URL(value)
+    return ['https:', 'http:', 'mailto:'].includes(url.protocol) ? url.toString() : null
+  } catch {
+    return null
+  }
+}
+
+const renderLetterRichText = (container: HTMLElement, items: LetterRichTextItem[]) => {
+  const fragment = document.createDocumentFragment()
+
+  items.forEach((item) => {
+    if (!item || typeof item.text !== 'string') return
+
+    const href = getSafeHref(item.href)
+    const element = document.createElement(href ? 'a' : item.annotations?.code ? 'code' : 'span')
+    element.textContent = item.text
+
+    if (href && element instanceof HTMLAnchorElement) {
+      element.href = href
+      element.rel = 'noopener noreferrer'
+      if (!href.startsWith('mailto:')) element.target = '_blank'
+    }
+
+    if (item.annotations?.bold) element.classList.add('letter-rich-bold')
+    if (item.annotations?.italic) element.classList.add('letter-rich-italic')
+    if (item.annotations?.strikethrough) element.classList.add('letter-rich-strikethrough')
+    if (item.annotations?.underline) element.classList.add('letter-rich-underline')
+    if (item.annotations?.code) element.classList.add('letter-rich-code')
+    if (/^[a-z]+(?:_background)?$/.test(item.annotations?.color ?? '')) {
+      element.classList.add(`letter-rich-${item.annotations.color}`)
+    }
+
+    fragment.appendChild(element)
+  })
+
+  container.replaceChildren(fragment)
+}
+
 export const setupGraduateLetters = () => {
   if (initialized) return
   initialized = true
@@ -153,10 +208,12 @@ export const setupGraduateLetters = () => {
 
       const result = (await response.json()) as {
         studentName?: string
-        letter?: string
+        letterRichText?: LetterRichTextItem[]
         signoff?: string
       }
-      if (!result.letter) throw new Error('Missing letter content')
+      if (!Array.isArray(result.letterRichText) || result.letterRichText.length === 0) {
+        throw new Error('Missing letter content')
+      }
 
       const paper = dialog.querySelector<HTMLElement>('.letter-paper')
       const body = dialog.querySelector<HTMLElement>('[data-letter-body]')
@@ -166,7 +223,7 @@ export const setupGraduateLetters = () => {
       dialog.querySelectorAll<HTMLElement>('[data-letter-student]').forEach((element) => {
         element.textContent = result.studentName || activeTrigger?.dataset.studentName || '同学'
       })
-      body.textContent = result.letter
+      renderLetterRichText(body, result.letterRichText)
       signoff.textContent = result.signoff?.trim() || '长江师范学院'
       paper.hidden = false
       paper.setAttribute('aria-hidden', 'false')

@@ -1,5 +1,26 @@
 const NOTION_API_VERSION = '2026-03-11'
 const DEFAULT_LETTER_SIGNOFF = '长江师范学院'
+const NOTION_COLORS = new Set([
+  'default',
+  'gray',
+  'brown',
+  'orange',
+  'yellow',
+  'green',
+  'blue',
+  'purple',
+  'pink',
+  'red',
+  'gray_background',
+  'brown_background',
+  'orange_background',
+  'yellow_background',
+  'green_background',
+  'blue_background',
+  'purple_background',
+  'pink_background',
+  'red_background',
+])
 const MAX_REQUEST_BYTES = 2 * 1024
 const MAX_TEXT_LENGTHS = {
   page: 200,
@@ -92,6 +113,38 @@ const getNotionText = (property) => {
   if (property.type === 'status') return property.status?.name?.trim() ?? ''
   return ''
 }
+
+const getSafeHref = (value) => {
+  if (!value) return null
+
+  try {
+    const url = new URL(value)
+    return ['https:', 'http:', 'mailto:'].includes(url.protocol) ? url.toString() : null
+  } catch {
+    return null
+  }
+}
+
+const encodeNotionId = (value) => {
+  try {
+    return encodeURIComponent(decodeURIComponent(value))
+  } catch {
+    return encodeURIComponent(value)
+  }
+}
+
+const serializeRichTextItem = (item) => ({
+  text: typeof item?.plain_text === 'string' ? item.plain_text : '',
+  href: getSafeHref(item?.href),
+  annotations: {
+    bold: item?.annotations?.bold === true,
+    italic: item?.annotations?.italic === true,
+    strikethrough: item?.annotations?.strikethrough === true,
+    underline: item?.annotations?.underline === true,
+    code: item?.annotations?.code === true,
+    color: NOTION_COLORS.has(item?.annotations?.color) ? item.annotations.color : 'default',
+  },
+})
 
 const isPublished = (property) => {
   if (!property) return false
@@ -232,6 +285,45 @@ const notionStudentRequest = async (env, body) => {
   return response.json()
 }
 
+const getLetterRichText = async (pageId, propertyId, env) => {
+  const items = []
+  let cursor
+
+  do {
+    const url = new URL(
+      `https://api.notion.com/v1/pages/${encodeNotionId(pageId)}/properties/${encodeNotionId(propertyId)}`,
+    )
+    url.searchParams.set('page_size', '100')
+    if (cursor) url.searchParams.set('start_cursor', cursor)
+
+    const response = await fetch(url, {
+      headers: {
+        Authorization: `Bearer ${env.NOTION_STUDENT_TOKEN}`,
+        'Notion-Version': NOTION_API_VERSION,
+      },
+    })
+
+    if (!response.ok) {
+      console.error(`Letter property API returned ${response.status}: ${await response.text()}`)
+      throw new Error('Letter content unavailable')
+    }
+
+    const result = await response.json()
+    for (const propertyItem of result.results ?? []) {
+      const richText = propertyItem?.type === 'rich_text' ? propertyItem.rich_text : null
+      if (richText) items.push(serializeRichTextItem(richText))
+    }
+    cursor = result.has_more ? result.next_cursor : undefined
+  } while (cursor)
+
+  const totalLength = items.reduce((sum, item) => sum + item.text.length, 0)
+  if (items.length === 0 || totalLength === 0 || totalLength > 12000) {
+    throw new Error('Invalid letter content')
+  }
+
+  return items
+}
+
 const findLetterRecord = async (letterKey, env) => {
   let cursor
 
@@ -248,9 +340,12 @@ const findLetterRecord = async (letterKey, env) => {
 
       const name = getNotionText(page.properties['姓名'])
       const studentNumber = getNotionText(page.properties['学号'])
-      const letter = getNotionText(page.properties['信件正文'])
+      const letterProperty = page.properties['信件正文']
+      const letter = getNotionText(letterProperty)
       const signoff = getNotionText(page.properties['信件留名']) || DEFAULT_LETTER_SIGNOFF
-      return name && studentNumber && letter ? { name, studentNumber, letter, signoff } : null
+      return name && studentNumber && letter
+        ? { name, studentNumber, letterPropertyId: letterProperty.id, pageId: page.id, signoff }
+        : null
     }
 
     cursor = response.has_more ? response.next_cursor : undefined
@@ -357,12 +452,13 @@ export default {
         const valid = record && (await constantTimeEqual(letterRequest.studentNumber, record.studentNumber))
         if (!valid) return jsonResponse({ error: 'Invalid credentials' }, 401, origin)
 
+        const letterRichText = await getLetterRichText(record.pageId, record.letterPropertyId, env)
         await env.VISIT_QUEUE.send({ ...letterRequest.visit, studentName: record.name })
         return jsonResponse(
           {
             success: true,
             studentName: record.name,
-            letter: record.letter,
+            letterRichText,
             signoff: record.signoff,
           },
           200,

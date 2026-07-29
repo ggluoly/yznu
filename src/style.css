@@ -965,6 +965,67 @@ h2 {
   white-space: pre-wrap;
 }
 
+.letter-body a {
+  color: #8c202b;
+  text-decoration-color: rgba(165, 33, 45, 0.45);
+  text-underline-offset: 3px;
+}
+
+.letter-rich-bold {
+  font-weight: 700;
+}
+
+.letter-rich-italic {
+  font-style: italic;
+}
+
+.letter-rich-strikethrough {
+  text-decoration-line: line-through;
+}
+
+.letter-rich-underline {
+  text-decoration-line: underline;
+  text-underline-offset: 3px;
+}
+
+.letter-rich-strikethrough.letter-rich-underline {
+  text-decoration-line: underline line-through;
+}
+
+.letter-rich-code {
+  padding: 2px 5px;
+  color: #8b2632;
+  background: rgba(165, 33, 45, 0.08);
+  border: 1px solid rgba(165, 33, 45, 0.12);
+  border-radius: 3px;
+  font-family: Consolas, 'Courier New', monospace;
+  font-size: 0.92em;
+}
+
+.letter-rich-gray { color: #787774; }
+.letter-rich-brown { color: #9f6b53; }
+.letter-rich-orange { color: #d9730d; }
+.letter-rich-yellow { color: #cb912f; }
+.letter-rich-green { color: #448361; }
+.letter-rich-blue { color: #337ea9; }
+.letter-rich-purple { color: #9065b0; }
+.letter-rich-pink { color: #c14c8a; }
+.letter-rich-red { color: #d44c47; }
+.letter-rich-gray_background { background: rgba(227, 226, 224, 0.65); }
+.letter-rich-brown_background { background: rgba(238, 224, 218, 0.75); }
+.letter-rich-orange_background { background: rgba(250, 222, 201, 0.75); }
+.letter-rich-yellow_background { background: rgba(253, 236, 200, 0.8); }
+.letter-rich-green_background { background: rgba(219, 237, 219, 0.75); }
+.letter-rich-blue_background { background: rgba(211, 229, 239, 0.75); }
+.letter-rich-purple_background { background: rgba(232, 222, 238, 0.75); }
+.letter-rich-pink_background { background: rgba(245, 224, 233, 0.75); }
+.letter-rich-red_background { background: rgba(255, 226, 221, 0.75); }
+
+[class*='letter-rich-'][class*='_background'] {
+  padding: 1px 3px;
+  border-radius: 2px;
+}
+
 .letter-paper footer {
   display: grid;
   justify-content: end;
