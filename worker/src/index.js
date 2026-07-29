@@ -1,4 +1,5 @@
 const NOTION_API_VERSION = '2026-03-11'
+const DEFAULT_LETTER_SIGNOFF = '长江师范学院'
 const MAX_REQUEST_BYTES = 2 * 1024
 const MAX_TEXT_LENGTHS = {
   page: 200,
@@ -59,9 +60,15 @@ const getReferrerHost = (value) => {
   }
 }
 
+const getChinaDateTime = (date = new Date()) => {
+  const chinaTime = new Date(date.getTime() + 8 * 60 * 60 * 1000)
+  return chinaTime.toISOString().slice(0, 19).replace('T', ' ')
+}
+
 const getRetentionDate = (visitedAt, retentionDays) => {
-  const date = new Date(visitedAt)
   const days = Number.parseInt(retentionDays ?? '90', 10)
+  const [year, month, day] = visitedAt.slice(0, 10).split('-').map(Number)
+  const date = new Date(Date.UTC(year, month - 1, day))
   date.setUTCDate(date.getUTCDate() + (Number.isFinite(days) && days > 0 ? days : 90))
   return date.toISOString().slice(0, 10)
 }
@@ -121,14 +128,12 @@ const buildNotionPayload = (visit, retentionDays) => ({
         {
           type: 'text',
           text: {
-            content: `${visit.eventType} ${visit.visitedAt.slice(0, 19).replace('T', ' ')} · ${visit.page}`,
+            content: `${visit.eventType} ${visit.visitedAt} · ${visit.page}`,
           },
         },
       ],
     },
-    访问时间: {
-      date: { start: visit.visitedAt },
-    },
+    访问时间: richText(visit.visitedAt),
     'IP 地址': richText(visit.ip),
     页面路径: richText(visit.page),
     来源域名: richText(visit.referrerHost),
@@ -193,7 +198,7 @@ const parseVisit = (input, request, env) => {
 
   return {
     dataSourceId: env.NOTION_VISITOR_DATA_SOURCE_ID,
-    visitedAt: new Date().toISOString(),
+    visitedAt: getChinaDateTime(),
     ip: request.headers.get('CF-Connecting-IP')?.slice(0, 64) ?? '',
     page,
     referrerHost: getReferrerHost(request.headers.get('Referer')),
@@ -244,7 +249,8 @@ const findLetterRecord = async (letterKey, env) => {
       const name = getNotionText(page.properties['姓名'])
       const studentNumber = getNotionText(page.properties['学号'])
       const letter = getNotionText(page.properties['信件正文'])
-      return name && studentNumber && letter ? { name, studentNumber, letter } : null
+      const signoff = getNotionText(page.properties['信件留名']) || DEFAULT_LETTER_SIGNOFF
+      return name && studentNumber && letter ? { name, studentNumber, letter, signoff } : null
     }
 
     cursor = response.has_more ? response.next_cursor : undefined
@@ -271,7 +277,7 @@ const parseLetterRequest = (input, request, env) => {
     studentNumber,
     visit: {
       dataSourceId: env.NOTION_VISITOR_DATA_SOURCE_ID,
-      visitedAt: new Date().toISOString(),
+      visitedAt: getChinaDateTime(),
       ip: request.headers.get('CF-Connecting-IP')?.slice(0, 64) ?? '',
       page,
       referrerHost: getReferrerHost(request.headers.get('Referer')),
@@ -352,7 +358,16 @@ export default {
         if (!valid) return jsonResponse({ error: 'Invalid credentials' }, 401, origin)
 
         await env.VISIT_QUEUE.send({ ...letterRequest.visit, studentName: record.name })
-        return jsonResponse({ success: true, studentName: record.name, letter: record.letter }, 200, origin)
+        return jsonResponse(
+          {
+            success: true,
+            studentName: record.name,
+            letter: record.letter,
+            signoff: record.signoff,
+          },
+          200,
+          origin,
+        )
       } catch {
         return jsonResponse({ error: 'Letter service unavailable' }, 503, origin)
       }

@@ -38,9 +38,11 @@ export const setupGraduateLetters = () => {
     const error = dialog.querySelector<HTMLElement>('.letter-error')
     const paper = dialog.querySelector<HTMLElement>('.letter-paper')
     const body = dialog.querySelector<HTMLElement>('[data-letter-body]')
+    const signoff = dialog.querySelector<HTMLElement>('[data-letter-signoff]')
 
     if (error) error.textContent = ''
     if (body) body.textContent = ''
+    if (signoff) signoff.textContent = '长江师范学院'
     if (paper) {
       paper.hidden = true
       paper.setAttribute('aria-hidden', 'true')
@@ -149,17 +151,23 @@ export const setupGraduateLetters = () => {
         return
       }
 
-      const result = (await response.json()) as { studentName?: string; letter?: string }
+      const result = (await response.json()) as {
+        studentName?: string
+        letter?: string
+        signoff?: string
+      }
       if (!result.letter) throw new Error('Missing letter content')
 
       const paper = dialog.querySelector<HTMLElement>('.letter-paper')
       const body = dialog.querySelector<HTMLElement>('[data-letter-body]')
-      if (!paper || !body) throw new Error('Missing letter elements')
+      const signoff = dialog.querySelector<HTMLElement>('[data-letter-signoff]')
+      if (!paper || !body || !signoff) throw new Error('Missing letter elements')
 
       dialog.querySelectorAll<HTMLElement>('[data-letter-student]').forEach((element) => {
         element.textContent = result.studentName || activeTrigger?.dataset.studentName || '同学'
       })
       body.textContent = result.letter
+      signoff.textContent = result.signoff?.trim() || '长江师范学院'
       paper.hidden = false
       paper.setAttribute('aria-hidden', 'false')
       void paper.offsetWidth

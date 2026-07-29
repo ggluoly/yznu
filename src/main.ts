@@ -290,7 +290,7 @@ const renderPage = (currentYear: number) => {
         <p>亲爱的<span data-letter-student>同学</span>：</p>
         <div class="letter-body" data-letter-body></div>
         <footer>
-          <strong>长江师范学院</strong>
+          <strong data-letter-signoff>长江师范学院</strong>
           <span>${currentYear}年</span>
         </footer>
       </article>

@@ -95,6 +95,10 @@ const notionStudentResponse = () => ({
           type: 'rich_text',
           rich_text: [{ plain_text: letterBody }],
         },
+        信件留名: {
+          type: 'rich_text',
+          rich_text: [{ plain_text: '计算机学院教师团队' }],
+        },
         发布状态: {
           type: 'select',
           select: { name: '已发布' },
@@ -115,6 +119,7 @@ test('queues one real browser page-load visit with the Cloudflare IP', async () 
   assert.equal(messages.length, 1)
   assert.equal(messages[0].ip, '203.0.113.8')
   assert.equal(messages[0].referrerHost, 'referrer.example')
+  assert.match(messages[0].visitedAt, /^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}$/)
 })
 
 test('rejects a request from an unapproved origin', async () => {
@@ -205,9 +210,11 @@ test('unlocks a published student letter and queues only the student name', asyn
   assert.equal(response.headers.get('Cache-Control'), 'no-store')
   assert.equal(result.studentName, '张同学')
   assert.equal(result.letter, letterBody)
+  assert.equal(result.signoff, '计算机学院教师团队')
   assert.equal(messages.length, 1)
   assert.equal(messages[0].eventType, '信件解锁')
   assert.equal(messages[0].studentName, '张同学')
+  assert.match(messages[0].visitedAt, /^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}$/)
   assert.equal('studentNumber' in messages[0], false)
   assert.equal('letter' in messages[0], false)
 })
@@ -234,6 +241,30 @@ test('rejects an incorrect student number without queuing a visit', async () => 
 
   assert.equal(response.status, 401)
   assert.equal(messages.length, 0)
+})
+
+test('uses the school name when the letter signoff is empty', async () => {
+  const { env } = createEnv()
+  const responseData = notionStudentResponse()
+  responseData.results[0].properties.信件留名.rich_text = []
+  const originalFetch = globalThis.fetch
+
+  globalThis.fetch = async () =>
+    new Response(JSON.stringify(responseData), {
+      status: 200,
+      headers: { 'Content-Type': 'application/json' },
+    })
+
+  let response
+  try {
+    response = await worker.fetch(createLetterRequest(), env)
+  } finally {
+    globalThis.fetch = originalFetch
+  }
+
+  const result = await response.json()
+  assert.equal(response.status, 200)
+  assert.equal(result.signoff, '长江师范学院')
 })
 
 test('applies the dedicated letter rate limiter', async () => {
@@ -264,7 +295,7 @@ test('writes the unlocked student name to the visitor data source', async () => 
           {
             body: {
               dataSourceId: env.NOTION_VISITOR_DATA_SOURCE_ID,
-              visitedAt: '2026-07-28T10:00:00.000Z',
+              visitedAt: '2026-07-28 18:00:00',
               ip: '203.0.113.8',
               page: '/',
               referrerHost: '',
@@ -289,5 +320,7 @@ test('writes the unlocked student name to the visitor data source', async () => 
   assert.equal(acknowledgements.join(','), 'ack')
   assert.equal(notionPayload.properties['学生姓名'].rich_text[0].text.content, '张同学')
   assert.equal(notionPayload.properties['访问方式'].select.name, '信件解锁')
+  assert.equal(notionPayload.properties['访问时间'].rich_text[0].text.content, '2026-07-28 18:00:00')
+  assert.equal(notionPayload.properties['数据保留截止日'].date.start, '2026-10-26')
   assert.equal(JSON.stringify(notionPayload).includes(studentNumber), false)
 })

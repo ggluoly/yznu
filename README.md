@@ -113,6 +113,7 @@ Notion 数据源需要使用以下字段名称和类型：
 | 肖像授权 | Checkbox | 否 | 只有勾选后才会下载并展示照片 |
 | 学号 | Rich text | 条件必填 | 仅用于 Worker 服务端信件验证，不进入前端数据 |
 | 信件正文 | Rich text | 否 | 每名学生专属信件；为空时卡片不可点击 |
+| 信件留名 | Rich text | 否 | 信件末尾署名；为空时使用“长江师范学院” |
 
 同步脚本只输出公开展示字段，不会将学号、信件正文或其他 Notion 属性写入页面。照片会在构建时下载到 `public/graduates/`，仅支持 HTTPS 的 JPG、PNG、WebP 和 AVIF，单张文件上限为 5 MiB。已发布记录只要求“姓名”必填；荣誉称号或寄语为空时，会分别从 `src/data/content-presets.json` 的 10 条预设中按学生记录稳定随机分配。相同 Notion 记录在预设库不变时会获得相同内容，避免每次构建后文案无故变化。
 
@@ -171,7 +172,7 @@ npm run sync:notion:optional
 
 访问记录会写入 Notion 的“访问记录”数据源（Data Source ID：`8f58fd9d-240e-431c-a82c-86a24245ba75`），包含：
 
-- Worker 服务端访问时间。
+- Worker 生成的北京时间，格式为 `YYYY-MM-DD HH:mm:ss`。
 - Cloudflare `CF-Connecting-IP` 真实客户端 IP 地址。
 - 页面路径、来源域名、设备类型、浏览器语言、时区和 Cloudflare 国家/地区代码。
 
@@ -328,7 +329,7 @@ POST /api/letter/unlock
 
 安全边界：
 
-- 学号与信件正文不进入 Git、`graduates.json` 或 `dist/`。
+- 学号、信件正文与信件留名不进入 Git、`graduates.json` 或 `dist/`。
 - 错误学号、不存在的标识和无信件记录返回统一错误，不写入访问记录。
 - 正确解锁后，访问记录新增“访问方式：信件解锁”和学生姓名，不保存输入学号。
 - 信件接口响应使用 `Cache-Control: no-store`，浏览器和中间缓存不得缓存信件正文。
