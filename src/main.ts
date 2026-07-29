@@ -137,7 +137,7 @@ const renderPage = (currentYear: number) => {
         <p class="card-message">${escapeHtml(message)}</p>
         ${
           letterKey
-            ? `<button class="graduate-letter-trigger" type="button" data-letter-key="${escapeHtml(letterKey)}" data-student-name="${escapeHtml(name)}" aria-label="打开给${escapeHtml(name)}同学的一封信"></button>`
+            ? `<span class="card-envelope-icon" aria-hidden="true"><span class="card-envelope-flap"></span><span class="card-envelope-seal"></span></span><button class="graduate-letter-trigger" type="button" data-letter-key="${escapeHtml(letterKey)}" data-student-name="${escapeHtml(name)}" aria-label="打开给${escapeHtml(name)}同学的一封信"></button>`
             : ''
         }
       </article>`,
@@ -190,7 +190,10 @@ const renderPage = (currentYear: number) => {
       <div class="hero-content">
         <p class="eyebrow"><span></span> CLASS OF ${GRADUATION_YEAR} · ${englishYears} <span></span></p>
         <p class="hero-school">长江师范学院</p>
-        <h1 id="page-title">${GRADUATION_YEAR}届优秀毕业生<br />${anniversaryLabel}纪念</h1>
+        <h1 id="page-title">
+          <span class="hero-title-line">${GRADUATION_YEAR}届优秀毕业生</span>
+          <span class="hero-title-line">${anniversaryLabel}纪念</span>
+        </h1>
         <p class="hero-subtitle">${yearRange} · 以青春作序，致敬一路闪耀的你们</p>
         <div class="hero-rule" aria-hidden="true"><i></i></div>
         <p class="hero-note">愿你们奔赴辽阔天地，始终葆有少年般澄澈的眼睛与热望。</p>

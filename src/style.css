@@ -26,7 +26,8 @@ html {
 
 body {
   margin: 0;
-  min-width: 320px;
+  min-width: 0;
+  overflow-x: hidden;
   background:
     radial-gradient(circle at 8% 11%, rgba(198, 161, 91, 0.11), transparent 23rem),
     linear-gradient(90deg, rgba(23, 43, 69, 0.025) 1px, transparent 1px),
@@ -284,6 +285,11 @@ h1 {
   line-height: 1.18;
   text-indent: clamp(5px, 1.3vw, 16px);
   text-shadow: 0 4px 22px rgba(0, 0, 0, 0.25);
+}
+
+.hero-title-line {
+  display: block;
+  white-space: nowrap;
 }
 
 .hero-subtitle {
@@ -630,10 +636,67 @@ h2 {
 }
 
 .graduate-card.has-letter::after {
-  border-color: rgba(165, 33, 45, 0.42);
+  opacity: 0;
+}
+
+.card-envelope-icon {
+  position: absolute !important;
+  z-index: 2 !important;
+  right: 14px;
+  bottom: 14px;
+  width: 50px;
+  height: 36px;
+  overflow: hidden;
   background:
-    linear-gradient(30deg, transparent 47%, rgba(165, 33, 45, 0.55) 48%, rgba(165, 33, 45, 0.55) 52%, transparent 53%),
-    linear-gradient(-30deg, transparent 47%, rgba(201, 154, 67, 0.7) 48%, rgba(201, 154, 67, 0.7) 52%, transparent 53%);
+    linear-gradient(33deg, transparent 48%, rgba(165, 33, 45, 0.62) 49%, rgba(165, 33, 45, 0.62) 51%, transparent 52%) left bottom / 51% 72% no-repeat,
+    linear-gradient(-33deg, transparent 48%, rgba(165, 33, 45, 0.62) 49%, rgba(165, 33, 45, 0.62) 51%, transparent 52%) right bottom / 51% 72% no-repeat,
+    linear-gradient(145deg, #fffaf0, #ead2a7);
+  border: 2px solid var(--honor-red);
+  border-radius: 3px;
+  box-shadow: 0 7px 14px rgba(75, 32, 38, 0.2), inset 0 0 0 2px rgba(255, 255, 255, 0.55);
+  pointer-events: none;
+  transform: rotate(-4deg);
+  transition: box-shadow 180ms ease, transform 180ms ease;
+}
+
+.card-envelope-flap {
+  position: absolute;
+  z-index: 1;
+  top: -25px;
+  left: 5px;
+  width: 36px;
+  height: 36px;
+  background: #f7e8cc;
+  border-right: 2px solid var(--honor-red);
+  border-bottom: 2px solid var(--honor-red);
+  transform: rotate(45deg);
+}
+
+.card-envelope-seal {
+  position: absolute;
+  z-index: 2;
+  top: 15px;
+  left: calc(50% - 7px);
+  width: 14px;
+  height: 14px;
+  background: var(--honor-red);
+  border: 1px solid #7d1724;
+  border-radius: 50%;
+  box-shadow: inset 0 0 0 2px rgba(255, 250, 240, 0.3), 0 2px 4px rgba(75, 32, 38, 0.22);
+}
+
+.card-envelope-seal::after {
+  position: absolute;
+  inset: 3px;
+  border: 1px solid rgba(255, 235, 190, 0.72);
+  border-radius: 50%;
+  content: '';
+}
+
+.graduate-card.has-letter:hover .card-envelope-icon,
+.graduate-card.has-letter:focus-within .card-envelope-icon {
+  box-shadow: 0 10px 20px rgba(75, 32, 38, 0.28), inset 0 0 0 2px rgba(255, 255, 255, 0.65);
+  transform: translateY(-3px) rotate(0deg) scale(1.06);
 }
 
 .graduate-letter-trigger {
@@ -1408,9 +1471,10 @@ a:focus-visible {
   }
 
   h1 {
-    font-size: 38px;
-    letter-spacing: 5px;
-    text-indent: 5px;
+    font-size: clamp(24px, 7.6vw, 31px);
+    letter-spacing: 1.5px;
+    line-height: 1.42;
+    text-indent: 0;
   }
 
   .hero-subtitle {
@@ -1487,6 +1551,27 @@ a:focus-visible {
     bottom: 10px;
     width: 32px;
     height: 32px;
+  }
+
+  .card-envelope-icon {
+    right: 10px;
+    bottom: 10px;
+    width: 43px;
+    height: 31px;
+  }
+
+  .card-envelope-flap {
+    top: -23px;
+    left: 5px;
+    width: 31px;
+    height: 31px;
+  }
+
+  .card-envelope-seal {
+    top: 12px;
+    left: calc(50% - 6px);
+    width: 12px;
+    height: 12px;
   }
 
   .portrait {
