@@ -1,3 +1,5 @@
 NOTION_VISITOR_TOKEN=replace_with_your_write_only_notion_token
 NOTION_VISITOR_DATA_SOURCE_ID=8f58fd9d-240e-431c-a82c-86a24245ba75
+NOTION_STUDENT_TOKEN=replace_with_your_read_only_student_notion_token
+NOTION_STUDENT_DATA_SOURCE_ID=16d3f47a-c52a-4dfb-9585-ffdb3246de5b
 ALLOWED_ORIGIN=https://graduates.example.edu.cn

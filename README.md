@@ -18,7 +18,7 @@
 - 原生 HTML 模板与 CSS
 - Notion API（可选，构建时同步）
 
-核心纪念展示页不依赖前端框架或运行时接口，可作为静态文件部署。优秀学生数据的 Notion Token 仅在 GitHub Actions 构建阶段使用；可选访问记录功能通过独立 Cloudflare Worker 运行，两个 Notion Token 都不会进入浏览器或 GitHub Pages 构建产物。
+核心纪念展示页不依赖前端框架或运行时接口，可作为静态文件部署。优秀学生数据的 Notion Token 仅在 CI 构建阶段使用；可选访问记录功能通过独立 Cloudflare Worker 运行，两个 Notion Token 都不会进入浏览器或静态站点构建产物。
 
 ## 目录说明
 
@@ -81,6 +81,7 @@ npm run preview
   message: '个人寄语或纪念文案',
   photo: 'graduates/01.webp',
   photoAlt: '姓名纪念照片',
+  letterKey: '服务端信件公开标识或 null',
 }
 ```
 
@@ -110,24 +111,34 @@ Notion 数据源需要使用以下字段名称和类型：
 | 照片 | Files | 否 | 第一张图片作为人物照片 |
 | 发布状态 | Checkbox、Status、Select | 是 | 勾选或填写“已发布”才会同步 |
 | 肖像授权 | Checkbox | 否 | 只有勾选后才会下载并展示照片 |
+| 学号 | Rich text | 条件必填 | 仅用于 Worker 服务端信件验证，不进入前端数据 |
+| 信件正文 | Rich text | 否 | 每名学生专属信件；为空时卡片不可点击 |
 
-同步脚本只输出公开展示字段，不会将其他 Notion 属性写入页面。照片会在构建时下载到 `public/graduates/`，仅支持 HTTPS 的 JPG、PNG、WebP 和 AVIF，单张文件上限为 5 MiB。已发布记录只要求“姓名”必填；荣誉称号或寄语为空时，会分别从 `src/data/content-presets.json` 的 10 条预设中按学生记录稳定随机分配。相同 Notion 记录在预设库不变时会获得相同内容，避免每次构建后文案无故变化。
+同步脚本只输出公开展示字段，不会将学号、信件正文或其他 Notion 属性写入页面。照片会在构建时下载到 `public/graduates/`，仅支持 HTTPS 的 JPG、PNG、WebP 和 AVIF，单张文件上限为 5 MiB。已发布记录只要求“姓名”必填；荣誉称号或寄语为空时，会分别从 `src/data/content-presets.json` 的 10 条预设中按学生记录稳定随机分配。相同 Notion 记录在预设库不变时会获得相同内容，避免每次构建后文案无故变化。
 
-### GitHub 配置
+信件规则：
+
+- 信件正文为空时，公开数据中的 `letterKey` 为 `null`，学生卡片无点击行为。
+- 信件正文非空时，学号必须填写，否则同步失败。
+- 已发布记录的学号必须唯一，重复学号会阻止构建。
+- 前端只得到由 Notion 页面 ID 生成的不可逆 `letterKey`；学号和信件正文只在 Worker 服务端读取。
+- 学号按文本精确匹配，支持包含前导零的学号。
+
+### CI 配置
 
 1. 在 Notion 创建 Internal Integration，并为其授予读取内容权限。
 2. 将优秀毕业生数据源共享给该 Integration。
-3. 在 GitHub 仓库进入 `Settings → Secrets and variables → Actions`。
+3. 在 CI 平台的项目变量设置中新增访问凭据。
 4. 在 `Secrets` 中新增 `NOTION_TOKEN`，值为 Notion Integration Token。
 5. 在 `Variables` 中新增 `NOTION_DATA_SOURCE_ID`，值为数据源 ID。
-6. 进入 `Actions → Deploy GitHub Pages`，点击 `Run workflow` 重新同步并发布。
+6. 手动触发部署工作流，重新同步并发布。
 
 工作流行为：
 
 - 两项配置都不存在：跳过 Notion，同步使用仓库中的默认数据。
 - 两项配置都存在：从 Notion 同步已发布记录后构建页面。
 - 只配置其中一项：构建失败，避免错误配置被静默忽略。
-- Notion API、字段校验或照片下载失败：构建失败，保留上一版 GitHub Pages。
+- Notion API、字段校验或照片下载失败：构建失败，保留上一版静态站点。
 
 ### 本地同步
 
@@ -168,7 +179,7 @@ npm run sync:notion:optional
 
 ### 部署 Cloudflare Worker
 
-Worker 位于 `worker/`，与 GitHub Pages 站点独立部署。先在 Cloudflare 账户中创建两个 Queue：
+Worker 位于 `worker/`，与静态站点独立部署。先在 Cloudflare 账户中创建两个 Queue：
 
 ```powershell
 cd worker
@@ -183,6 +194,8 @@ npx wrangler queues create yznu-visit-events-dlq
 ```powershell
 npx wrangler secret put NOTION_VISITOR_TOKEN
 npx wrangler secret put NOTION_VISITOR_DATA_SOURCE_ID
+npx wrangler secret put NOTION_STUDENT_TOKEN
+npx wrangler secret put NOTION_STUDENT_DATA_SOURCE_ID
 npx wrangler deploy
 ```
 
@@ -191,6 +204,9 @@ npx wrangler deploy
 - `NOTION_VISITOR_TOKEN` 使用专门的写入型 Notion Integration Token。
 - `NOTION_VISITOR_DATA_SOURCE_ID` 填写 `8f58fd9d-240e-431c-a82c-86a24245ba75`。
 - 将“访问记录”数据表共享给该 Integration，且不要共享“优秀学生”表。
+- `NOTION_STUDENT_TOKEN` 使用专门的只读型 Notion Integration Token。
+- `NOTION_STUDENT_DATA_SOURCE_ID` 填写 `16d3f47a-c52a-4dfb-9585-ffdb3246de5b`。
+- 只读 Integration 只共享“优秀学生”表，用于服务端校验学号和读取信件正文。
 
 部署 Worker 后，在 Cloudflare Dashboard 配置运行变量：
 
@@ -225,10 +241,10 @@ https://graduates.example.edu.cn,https://old.example.edu.cn
 
 #### 站点域名
 
-在 GitHub 仓库设置：
+在静态站点托管平台的域名设置中配置：
 
 ```text
-Settings → Pages → Custom domain
+Custom domain
 ```
 
 填写站点完整域名，例如：
@@ -237,15 +253,15 @@ Settings → Pages → Custom domain
 graduates.example.edu.cn
 ```
 
-并在 DNS 服务商创建指向 GitHub Pages 的记录。对于子域名，通常使用：
+并在 DNS 服务商创建指向静态站点托管平台的记录。对于子域名，通常使用：
 
 ```text
 类型：CNAME
 名称：graduates
-目标：GitHub用户名.github.io
+目标：托管平台提供的站点目标地址
 ```
 
-等待 GitHub 完成域名检查后启用 `Enforce HTTPS`。当前 Vite 使用相对资源路径，不需要因站点域名变化修改 `vite.config.ts`。
+等待托管平台完成域名检查后启用 HTTPS。当前 Vite 使用相对资源路径，不需要因站点域名变化修改 `vite.config.ts`。
 
 #### Worker API 域名
 
@@ -273,20 +289,20 @@ visitor-api.example.edu.cn
 https://visitor-api.example.edu.cn/api/visit
 ```
 
-在 GitHub 仓库 `Settings → Secrets and variables → Actions → Variables` 新建：
+在 CI 平台的项目变量设置中新增：
 
 ```text
 VISITOR_API_URL=https://visitor-api.example.edu.cn/api/visit
 ```
 
-随后重新运行 GitHub Actions 的 `Deploy GitHub Pages`，构建时会将该公开 API 地址写入前端。此变量只包含 Worker URL，绝不能填入 Notion Token。
+随后重新运行部署工作流，构建时会将该公开 API 地址写入前端。此变量只包含 Worker URL，绝不能填入 Notion Token。
 
 以后更换域名时只需同步修改：
 
-1. GitHub Pages 的 `Custom domain` 和对应 DNS。
+1. 静态站点托管平台的自定义域名和对应 DNS。
 2. Cloudflare Worker 的 `Custom Domain`。
 3. Cloudflare Worker 变量 `ALLOWED_ORIGIN`。
-4. GitHub Actions Variable `VISITOR_API_URL`。
+4. CI 项目变量 `VISITOR_API_URL`。
 
 源码、`vite.config.ts`、`wrangler.jsonc` 和 GitHub Actions 工作流均无需修改。
 
@@ -296,8 +312,27 @@ VISITOR_API_URL=https://visitor-api.example.edu.cn/api/visit
 - 仅接受 `POST /api/visit`，请求体最大 2 KiB。
 - 常见机器人 User-Agent 不写入记录。
 - 按真实 IP 限制为每分钟最多 60 次请求，IP 仅用于限流和写入访问记录。
+- 信件解锁使用独立限流器，同一真实 IP 每分钟最多尝试 5 次。
 - 使用 Cloudflare Queue 异步写入 Notion；Notion 返回 `429` 或 `5xx` 时会重试，连续失败后进入死信队列。
 - 访问统计失败不会影响纪念页面正常显示。
+
+### 学生信件解锁
+
+有信件正文的优秀学生卡片可点击。点击后会打开信封样式对话框，输入对应学号并通过 Worker 校验后播放开信动画，展示该学生的专属信件。没有信件正文的卡片不具备点击行为。
+
+解锁接口：
+
+```text
+POST /api/letter/unlock
+```
+
+安全边界：
+
+- 学号与信件正文不进入 Git、`graduates.json` 或 `dist/`。
+- 错误学号、不存在的标识和无信件记录返回统一错误，不写入访问记录。
+- 正确解锁后，访问记录新增“访问方式：信件解锁”和学生姓名，不保存输入学号。
+- 信件接口响应使用 `Cache-Control: no-store`，浏览器和中间缓存不得缓存信件正文。
+- 当前使用每 IP 限流，不包含 Turnstile；若出现分布式猜测，应增加人机验证。
 
 Worker 本地检查和测试：
 

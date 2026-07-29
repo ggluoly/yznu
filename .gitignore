@@ -13,7 +13,8 @@ dist-ssr/
 !.env.example
 *.local
 public/graduates/
-worker/.dev.vars
+worker/.dev.vars*
+!worker/.dev.vars.example
 worker/.wrangler/
 
 # Logs, test reports, and browser artifacts
@@ -27,6 +28,7 @@ lerna-debug.log*
 coverage/
 playwright-report/
 test-results/
+.playwright-mcp/
 *.tmp
 *.temp
 *.bak

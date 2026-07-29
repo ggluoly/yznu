@@ -6,7 +6,8 @@
     "honor": "优秀毕业生",
     "message": "将课堂上的求知与热爱，带往更广阔的山海。",
     "photo": null,
-    "photoAlt": null
+    "photoAlt": null,
+    "letterKey": null
   },
   {
     "number": "02",
@@ -15,7 +16,8 @@
     "honor": "励志成长榜样",
     "message": "以笃行回应青春，以责任照亮前路。",
     "photo": null,
-    "photoAlt": null
+    "photoAlt": null,
+    "letterKey": null
   },
   {
     "number": "03",
@@ -24,7 +26,8 @@
     "honor": "勤学求是典范",
     "message": "以好学之心守住初心，以实干之姿奔赴未来。",
     "photo": null,
-    "photoAlt": null
+    "photoAlt": null,
+    "letterKey": null
   },
   {
     "number": "04",
@@ -33,7 +36,8 @@
     "honor": "实践服务先锋",
     "message": "让青春的脚步，始终与时代的脉搏同频。",
     "photo": null,
-    "photoAlt": null
+    "photoAlt": null,
+    "letterKey": null
   },
   {
     "number": "05",
@@ -42,7 +46,8 @@
     "honor": "开拓进取先锋",
     "message": "怀揣敢为人先的勇气，书写自己的答案。",
     "photo": null,
-    "photoAlt": null
+    "photoAlt": null,
+    "letterKey": null
   },
   {
     "number": "06",
@@ -51,6 +56,7 @@
     "honor": "全面发展榜样",
     "message": "此去星辰大海，仍心系母校与同窗。",
     "photo": null,
-    "photoAlt": null
+    "photoAlt": null,
+    "letterKey": null
   }
 ]

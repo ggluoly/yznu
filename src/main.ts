@@ -1,6 +1,7 @@
 import './style.css'
 import contentPresets from './data/content-presets.json'
 import graduateData from './data/graduates.json'
+import { setupGraduateLetters } from './graduate-letter'
 import { setupVisitorTracking } from './visitor-tracking'
 
 type Graduate = {
@@ -11,6 +12,7 @@ type Graduate = {
   message: string
   photo: string | null
   photoAlt: string | null
+  letterKey: string | null
 }
 
 const GRADUATION_YEAR = 2017
@@ -113,11 +115,14 @@ const renderPage = (currentYear: number) => {
   const graduateGridStyle = compactGrid ? ` style="--graduate-count: ${graduates.length}"` : ''
   const graduateCards = graduates
     .map(
-      ({ number, name, department, honor, message, photo, photoAlt }) => `
-      <article class="graduate-card">
+      ({ number, name, department, honor, message, photo, photoAlt, letterKey }) => `
+      <article class="graduate-card${letterKey ? ' has-letter' : ''}">
         <div class="card-topline">
           <span class="graduate-number">${escapeHtml(number)}</span>
-          <span class="card-mark" aria-hidden="true"></span>
+          <span class="card-topline-marks" aria-hidden="true">
+            ${letterKey ? '<span class="card-letter-badge">一封信</span>' : ''}
+            <span class="card-mark"></span>
+          </span>
         </div>
         <div class="portrait${photo ? ' has-photo' : ''}">
           ${
@@ -130,6 +135,11 @@ const renderPage = (currentYear: number) => {
         <h3>${escapeHtml(name)}</h3>
         <p class="card-department">${escapeHtml(department)}</p>
         <p class="card-message">${escapeHtml(message)}</p>
+        ${
+          letterKey
+            ? `<button class="graduate-letter-trigger" type="button" data-letter-key="${escapeHtml(letterKey)}" data-student-name="${escapeHtml(name)}" aria-label="打开给${escapeHtml(name)}同学的一封信"></button>`
+            : ''
+        }
       </article>`,
     )
     .join('')
@@ -249,6 +259,44 @@ const renderPage = (currentYear: number) => {
     </section>
   </main>
 
+  <dialog class="letter-dialog" id="graduate-letter-dialog" aria-labelledby="letter-dialog-title">
+    <button class="letter-dialog-close" type="button" aria-label="关闭信件对话框">×</button>
+    <div class="letter-dialog-shell">
+      <section class="letter-gate">
+        <p class="letter-kicker">A LETTER FOR YOU</p>
+        <h2 id="letter-dialog-title">致<span data-letter-student>同学</span>的一封信</h2>
+        <p class="letter-hint">输入你的学号，开启这封为你珍藏的信。</p>
+        <div class="envelope-stage" aria-hidden="true">
+          <div class="envelope">
+            <div class="envelope-back"></div>
+            <div class="envelope-sheet"></div>
+            <div class="envelope-front"></div>
+            <div class="envelope-flap"></div>
+            <div class="envelope-seal">长师</div>
+          </div>
+        </div>
+        <form class="letter-unlock-form">
+          <label for="student-number">学号</label>
+          <div class="letter-input-row">
+            <input id="student-number" name="studentNumber" type="text" inputmode="numeric" autocomplete="off" spellcheck="false" maxlength="64" />
+            <button type="submit">开启信封</button>
+          </div>
+          <p class="letter-error" role="alert" aria-live="polite"></p>
+        </form>
+      </section>
+      <article class="letter-paper" aria-hidden="true" hidden>
+        <p class="letter-paper-date">${currentYear}</p>
+        <h2 tabindex="-1">致<span data-letter-student>同学</span>的一封信</h2>
+        <p>亲爱的<span data-letter-student>同学</span>：</p>
+        <div class="letter-body" data-letter-body></div>
+        <footer>
+          <strong>长江师范学院</strong>
+          <span>${currentYear}年</span>
+        </footer>
+      </article>
+    </div>
+  </dialog>
+
   <footer class="site-footer">
     <p><strong>长江师范学院</strong> · 重庆市涪陵区聚贤大道16号</p>
     <p>CLASS OF ${GRADUATION_YEAR} · EXCELLENCE MEMORIAL · ${currentYear}</p>
@@ -295,6 +343,7 @@ const renderPage = (currentYear: number) => {
 const localYear = Math.max(GRADUATION_YEAR, getChinaYear(new Date()))
 renderPage(localYear)
 setupVisitorTracking()
+setupGraduateLetters()
 
 void getCurrentYear().then((networkYear) => {
   const normalizedYear = Math.max(GRADUATION_YEAR, networkYear)

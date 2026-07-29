@@ -1,11 +1,12 @@
 import { mkdir, readFile, rm, writeFile } from 'node:fs/promises'
+import { createHash } from 'node:crypto'
 import path from 'node:path'
 import process from 'node:process'
 
 try {
   process.loadEnvFile('.env')
 } catch {
-  // GitHub Actions injects secrets directly; local .env is optional.
+  // CI environments inject secrets directly; local .env is optional.
 }
 
 const NOTION_API_VERSION = '2026-03-11'
@@ -42,6 +43,8 @@ const getPreset = (values, seed) => {
 
   return values[(hash >>> 0) % values.length]
 }
+
+const getLetterKey = (pageId) => createHash('sha256').update(pageId).digest('hex').slice(0, 32)
 
 const notionRequest = async (body) => {
   const response = await fetch(
@@ -185,6 +188,7 @@ const main = async () => {
   await mkdir(PHOTO_DIRECTORY, { recursive: true })
 
   const graduates = []
+  const studentNumbers = new Set()
 
   for (const [index, page] of publishedPages.entries()) {
     const properties = page.properties
@@ -193,11 +197,24 @@ const main = async () => {
     const major = getText(properties['专业'])
     const honor = getText(properties['荣誉称号']) || getPreset(honorPresets, `${page.id}:honor`)
     const message = getText(properties['寄语']) || getPreset(messagePresets, `${page.id}:message`)
+    const studentNumber = getText(properties['学号'])
+    const letterBody = getText(properties['信件正文'])
     const portraitAuthorized = properties['肖像授权']?.type === 'checkbox' && properties['肖像授权'].checkbox
     const photo = portraitAuthorized ? getPhoto(properties['照片']) : null
 
     if (!name) {
       fail(`Published record ${page.id} is missing 姓名.`)
+    }
+
+    if (letterBody && !studentNumber) {
+      fail(`Published student ${name} has 信件正文 but no 学号.`)
+    }
+
+    if (studentNumber) {
+      if (studentNumbers.has(studentNumber)) {
+        fail(`Duplicate 学号 found for published student ${name}.`)
+      }
+      studentNumbers.add(studentNumber)
     }
 
     const department = [college, major].filter(Boolean).join(' · ') || '长江师范学院 · 2017届'
@@ -211,6 +228,7 @@ const main = async () => {
       message,
       photo: localPhoto,
       photoAlt: localPhoto ? `${name}纪念照片` : null,
+      letterKey: letterBody ? getLetterKey(page.id) : null,
     })
   }
 

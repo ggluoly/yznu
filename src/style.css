@@ -457,7 +457,51 @@ h1 {
 }
 
 .honor-section {
-  padding-bottom: 138px;
+  --honor-red: #a5212d;
+  --honor-wine: #4b2026;
+  --honor-gold: #c99a43;
+  --honor-ivory: #fffaf0;
+  --honor-line: rgba(201, 154, 67, 0.52);
+  position: relative;
+  width: 100%;
+  max-width: none;
+  overflow: hidden;
+  padding: 112px max(32px, calc((100% - 1120px) / 2)) 138px;
+  background:
+    radial-gradient(circle at 7% 11%, rgba(165, 33, 45, 0.1), transparent 13rem),
+    radial-gradient(circle at 95% 88%, rgba(201, 154, 67, 0.18), transparent 20rem),
+    linear-gradient(90deg, rgba(201, 154, 67, 0.16) 1px, transparent 1px),
+    var(--honor-ivory);
+  background-size: auto, auto, 7px 7px, auto;
+}
+
+.honor-section::before,
+.honor-section::after {
+  position: absolute;
+  z-index: 0;
+  width: 220px;
+  height: 220px;
+  border: 1px solid rgba(201, 154, 67, 0.28);
+  border-radius: 50%;
+  content: '';
+}
+
+.honor-section::before {
+  top: -146px;
+  left: -94px;
+  box-shadow: inset 0 0 0 18px rgba(165, 33, 45, 0.035), inset 0 0 0 36px rgba(201, 154, 67, 0.05);
+}
+
+.honor-section::after {
+  right: -124px;
+  bottom: -138px;
+  box-shadow: inset 0 0 0 15px rgba(201, 154, 67, 0.06), inset 0 0 0 33px rgba(165, 33, 45, 0.035);
+}
+
+.honor-section .section-heading,
+.honor-section .graduate-grid {
+  position: relative;
+  z-index: 1;
 }
 
 .section-heading {
@@ -470,9 +514,42 @@ h1 {
   border-top: 1px solid var(--ink);
 }
 
+.honor-section .section-heading {
+  position: relative;
+  margin-bottom: 48px;
+  padding-top: 27px;
+  border-top-color: var(--honor-red);
+}
+
+.honor-section .section-heading::before,
+.honor-section .section-heading::after {
+  position: absolute;
+  top: -4px;
+  content: '';
+}
+
+.honor-section .section-heading::before {
+  left: 0;
+  width: 126px;
+  height: 7px;
+  background: linear-gradient(90deg, var(--honor-red), var(--honor-gold));
+}
+
+.honor-section .section-heading::after {
+  left: 132px;
+  width: 8px;
+  height: 8px;
+  background: var(--honor-gold);
+  transform: rotate(45deg);
+}
+
 .heading-kicker {
   margin-bottom: 13px;
   color: var(--red);
+}
+
+.honor-section .heading-kicker {
+  color: var(--honor-gold);
 }
 
 h2 {
@@ -481,6 +558,11 @@ h2 {
   font-size: clamp(30px, 3.5vw, 45px);
   letter-spacing: 4px;
   line-height: 1.25;
+}
+
+.honor-section h2 {
+  color: var(--honor-wine);
+  text-shadow: 0 1px 0 rgba(255, 255, 255, 0.85);
 }
 
 .graduate-grid {
@@ -499,8 +581,11 @@ h2 {
   min-height: 415px;
   overflow: hidden;
   padding: 20px 23px 24px;
-  background: rgba(255, 253, 247, 0.48);
-  border: 1px solid var(--line);
+  background:
+    linear-gradient(135deg, rgba(255, 255, 255, 0.96), rgba(255, 250, 240, 0.97)),
+    var(--honor-ivory);
+  border: 1px solid var(--honor-line);
+  box-shadow: inset 0 0 0 5px rgba(255, 250, 240, 0.8), inset 0 0 0 6px rgba(201, 154, 67, 0.16);
   transition: border-color 180ms ease, box-shadow 180ms ease, transform 180ms ease;
 }
 
@@ -510,9 +595,363 @@ h2 {
   right: -44px;
   width: 118px;
   height: 118px;
-  border: 1px solid rgba(165, 33, 45, 0.14);
+  border: 1px solid rgba(201, 154, 67, 0.42);
   border-radius: 50%;
   content: '';
+}
+
+.graduate-card::after {
+  position: absolute;
+  right: 14px;
+  bottom: 14px;
+  width: 38px;
+  height: 38px;
+  border: 1px solid rgba(165, 33, 45, 0.18);
+  border-radius: 50%;
+  box-shadow: inset 0 0 0 5px rgba(201, 154, 67, 0.075);
+  content: '';
+  pointer-events: none;
+}
+
+.graduate-card > * {
+  position: relative;
+  z-index: 1;
+}
+
+.graduate-card:hover,
+.graduate-card:focus-within {
+  border-color: rgba(165, 33, 45, 0.68);
+  box-shadow: 0 16px 28px rgba(75, 32, 38, 0.15), inset 0 0 0 5px rgba(255, 250, 240, 0.85), inset 0 0 0 6px rgba(201, 154, 67, 0.34);
+  transform: translateY(-5px);
+}
+
+.graduate-card.has-letter {
+  cursor: pointer;
+}
+
+.graduate-card.has-letter::after {
+  border-color: rgba(165, 33, 45, 0.42);
+  background:
+    linear-gradient(30deg, transparent 47%, rgba(165, 33, 45, 0.55) 48%, rgba(165, 33, 45, 0.55) 52%, transparent 53%),
+    linear-gradient(-30deg, transparent 47%, rgba(201, 154, 67, 0.7) 48%, rgba(201, 154, 67, 0.7) 52%, transparent 53%);
+}
+
+.graduate-letter-trigger {
+  position: absolute;
+  z-index: 3;
+  inset: 0;
+  width: 100%;
+  padding: 0;
+  border: 0;
+  color: transparent;
+  background: transparent;
+  cursor: pointer;
+}
+
+.graduate-letter-trigger:focus-visible {
+  outline: 3px solid var(--honor-gold);
+  outline-offset: -5px;
+}
+
+.letter-dialog {
+  width: min(680px, calc(100% - 32px));
+  max-height: min(90vh, 820px);
+  padding: 0;
+  overflow: visible;
+  color: var(--ink);
+  background: transparent;
+  border: 0;
+}
+
+.letter-dialog::backdrop {
+  background: rgba(8, 22, 39, 0.78);
+  backdrop-filter: blur(5px);
+}
+
+.letter-dialog-shell {
+  position: relative;
+  min-height: 530px;
+  overflow: hidden;
+  background:
+    radial-gradient(circle at 12% 12%, rgba(201, 154, 67, 0.16), transparent 12rem),
+    linear-gradient(135deg, #fffdf7, #f5ead7);
+  border: 1px solid rgba(201, 154, 67, 0.72);
+  box-shadow: 0 30px 80px rgba(0, 0, 0, 0.35), inset 0 0 0 7px rgba(255, 253, 247, 0.8), inset 0 0 0 8px rgba(165, 33, 45, 0.16);
+}
+
+.letter-dialog-close {
+  position: absolute;
+  z-index: 20;
+  top: 14px;
+  right: 14px;
+  width: 38px;
+  height: 38px;
+  display: grid;
+  place-items: center;
+  padding: 0 0 3px;
+  color: var(--red-deep);
+  background: rgba(255, 253, 247, 0.9);
+  border: 1px solid rgba(165, 33, 45, 0.25);
+  border-radius: 50%;
+  font-family: Arial, sans-serif;
+  font-size: 26px;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.letter-gate {
+  position: relative;
+  z-index: 2;
+  padding: 58px 54px 46px;
+  text-align: center;
+  transition: opacity 260ms ease, transform 420ms ease;
+}
+
+.letter-kicker {
+  margin-bottom: 12px;
+  color: var(--honor-gold, #c99a43);
+  font-family: Georgia, serif;
+  font-size: 11px;
+  letter-spacing: 4px;
+}
+
+.letter-gate h2,
+.letter-paper h2 {
+  color: #4b2026;
+}
+
+.letter-gate h2 {
+  font-size: clamp(28px, 4vw, 38px);
+  letter-spacing: 3px;
+}
+
+.letter-hint {
+  margin: 14px 0 20px;
+  color: #76665e;
+  font-size: 14px;
+}
+
+.envelope-stage {
+  height: 178px;
+  display: grid;
+  place-items: center;
+  perspective: 900px;
+}
+
+.envelope {
+  position: relative;
+  width: 250px;
+  height: 150px;
+  filter: drop-shadow(0 15px 18px rgba(75, 32, 38, 0.18));
+}
+
+.envelope-back,
+.envelope-front,
+.envelope-flap,
+.envelope-sheet {
+  position: absolute;
+  inset: 0;
+}
+
+.envelope-back {
+  background: #ead7b6;
+  border: 1px solid #c99a43;
+}
+
+.envelope-sheet {
+  z-index: 1;
+  inset: 15px 20px 8px;
+  background: #fffdf7;
+  border: 1px solid rgba(201, 154, 67, 0.45);
+  transform: translateY(0);
+  transition: transform 620ms 250ms ease;
+}
+
+.envelope-front {
+  z-index: 3;
+  background:
+    linear-gradient(32deg, #f2e3c9 49.5%, transparent 50%) left / 50.5% 100% no-repeat,
+    linear-gradient(-32deg, #ead6b5 49.5%, transparent 50%) right / 50.5% 100% no-repeat,
+    linear-gradient(148deg, transparent 49.5%, #e4c99d 50%) bottom / 100% 54% no-repeat;
+  border-right: 1px solid #c99a43;
+  border-bottom: 1px solid #c99a43;
+  border-left: 1px solid #c99a43;
+}
+
+.envelope-flap {
+  z-index: 4;
+  height: 82px;
+  background: #eeddbf;
+  border: 1px solid #c99a43;
+  clip-path: polygon(0 0, 100% 0, 50% 100%);
+  transform-origin: top;
+  transition: transform 600ms ease, z-index 0ms 290ms;
+}
+
+.envelope-seal {
+  position: absolute;
+  z-index: 5;
+  top: 58px;
+  left: calc(50% - 24px);
+  width: 48px;
+  height: 48px;
+  display: grid;
+  place-items: center;
+  color: #f8e9c4;
+  background: #a5212d;
+  border: 1px solid #7d1724;
+  border-radius: 50%;
+  box-shadow: inset 0 0 0 4px #a5212d, inset 0 0 0 5px rgba(248, 233, 196, 0.55);
+  font-size: 12px;
+  font-weight: 700;
+  transition: opacity 180ms ease, transform 260ms ease;
+}
+
+.letter-unlock-form {
+  max-width: 460px;
+  margin: 0 auto;
+  text-align: left;
+}
+
+.letter-unlock-form label {
+  display: block;
+  margin-bottom: 7px;
+  color: #4b2026;
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 2px;
+}
+
+.letter-input-row {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 10px;
+}
+
+.letter-input-row input {
+  min-width: 0;
+  height: 46px;
+  padding: 0 14px;
+  color: #172b45;
+  background: rgba(255, 255, 255, 0.9);
+  border: 1px solid rgba(201, 154, 67, 0.72);
+  border-radius: 0;
+  font: inherit;
+}
+
+.letter-input-row button {
+  min-width: 112px;
+  padding: 0 18px;
+  color: #fffaf0;
+  background: #a5212d;
+  border: 1px solid #7d1724;
+  font: inherit;
+  font-size: 14px;
+  letter-spacing: 1px;
+  cursor: pointer;
+}
+
+.letter-input-row button:disabled {
+  cursor: wait;
+  opacity: 0.65;
+}
+
+.letter-error {
+  min-height: 22px;
+  margin: 8px 0 0;
+  color: #a5212d;
+  font-size: 13px;
+}
+
+.letter-paper {
+  position: absolute;
+  z-index: 8;
+  inset: 34px 42px;
+  overflow: auto;
+  padding: 50px 54px 44px;
+  color: #51473f;
+  background:
+    linear-gradient(90deg, rgba(165, 33, 45, 0.04) 1px, transparent 1px),
+    #fffdf7;
+  background-size: 5px 5px, auto;
+  border: 1px solid rgba(201, 154, 67, 0.58);
+  box-shadow: 0 20px 55px rgba(75, 32, 38, 0.24);
+  opacity: 0;
+  transform: translateY(210px) scale(0.82);
+  transition: opacity 320ms 460ms ease, transform 720ms 380ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.letter-paper-date {
+  margin-bottom: 13px;
+  color: #c99a43;
+  font-family: Georgia, serif;
+  font-size: 13px;
+  letter-spacing: 2px;
+  text-align: center;
+}
+
+.letter-paper h2 {
+  margin-bottom: 32px;
+  font-size: clamp(26px, 4vw, 36px);
+  letter-spacing: 3px;
+  text-align: center;
+}
+
+.letter-paper > p:not(.letter-paper-date),
+.letter-body {
+  font-size: 16px;
+  line-height: 2;
+}
+
+.letter-body {
+  min-height: 130px;
+  margin: 12px 0 34px;
+  white-space: pre-wrap;
+}
+
+.letter-paper footer {
+  display: grid;
+  justify-content: end;
+  gap: 5px;
+  color: #4b2026;
+  text-align: right;
+}
+
+.letter-dialog.is-unlocked .letter-gate {
+  opacity: 0;
+  transform: translateY(24px) scale(0.96);
+  pointer-events: none;
+  transition-delay: 720ms;
+}
+
+.letter-dialog.is-unlocked .envelope-flap {
+  z-index: 0;
+  transform: rotateX(180deg);
+}
+
+.letter-dialog.is-unlocked .envelope-seal {
+  opacity: 0;
+  transform: scale(0.6);
+}
+
+.letter-dialog.is-unlocked .envelope-sheet {
+  transform: translateY(-95px);
+}
+
+.letter-dialog.is-unlocked .letter-paper {
+  opacity: 1;
+  transform: translateY(0) scale(1);
+  transition-delay: 820ms;
+}
+
+.letter-dialog.is-submitting .envelope-seal {
+  animation: seal-pulse 850ms ease-in-out infinite alternate;
+}
+
+@keyframes seal-pulse {
+  to {
+    box-shadow: inset 0 0 0 4px #a5212d, inset 0 0 0 5px rgba(248, 233, 196, 0.55), 0 0 0 8px rgba(165, 33, 45, 0.1);
+  }
 }
 
 .card-topline {
@@ -522,21 +961,41 @@ h2 {
   align-items: center;
   justify-content: space-between;
   padding-bottom: 15px;
-  border-bottom: 1px solid var(--line);
+  border-bottom: 1px solid rgba(201, 154, 67, 0.46);
 }
 
 .graduate-number {
-  color: var(--red);
+  color: var(--honor-red);
   font-family: Georgia, 'Times New Roman', serif;
   font-size: 20px;
   font-style: italic;
 }
 
 .card-mark {
-  width: 8px;
-  height: 8px;
-  background: var(--gold);
+  width: 10px;
+  height: 10px;
+  background: var(--honor-gold);
+  box-shadow: 0 0 0 3px rgba(165, 33, 45, 0.1);
   transform: rotate(45deg);
+}
+
+.card-topline-marks {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.card-letter-badge {
+  color: var(--honor-red);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 2px;
+}
+
+.card-letter-badge::before {
+  margin-right: 5px;
+  color: var(--honor-gold);
+  content: '✦';
 }
 
 .portrait {
@@ -545,19 +1004,19 @@ h2 {
   margin: 29px auto 22px;
   display: grid;
   place-items: center;
-  border: 1px solid var(--red);
+  border: 2px solid var(--honor-red);
   border-radius: 50%;
   color: var(--red);
   font-family: Georgia, 'Times New Roman', serif;
   font-size: 23px;
   font-style: italic;
-  box-shadow: inset 0 0 0 7px rgba(246, 241, 232, 0.8), inset 0 0 0 8px var(--gold);
+  box-shadow: inset 0 0 0 6px rgba(255, 250, 240, 0.94), inset 0 0 0 8px var(--honor-gold), 0 6px 16px rgba(75, 32, 38, 0.1);
 }
 
 .portrait.has-photo {
   overflow: hidden;
-  border-color: var(--gold);
-  box-shadow: 0 8px 20px rgba(23, 43, 69, 0.16);
+  border-color: var(--honor-red);
+  box-shadow: inset 0 0 0 4px var(--honor-gold), 0 8px 20px rgba(75, 32, 38, 0.17);
 }
 
 .portrait img {
@@ -568,16 +1027,28 @@ h2 {
 }
 
 .card-honor {
+  position: relative;
   margin-bottom: 9px;
-  color: var(--red);
-  font-size: 12px;
+  color: var(--honor-red);
+  font-size: 13px;
+  font-weight: 700;
   letter-spacing: 2px;
   text-align: center;
 }
 
+.card-honor::before,
+.card-honor::after {
+  display: inline-block;
+  width: 18px;
+  height: 1px;
+  margin: 0 8px 4px;
+  background: var(--honor-gold);
+  content: '';
+}
+
 .graduate-card h3 {
   margin-bottom: 8px;
-  color: var(--ink);
+  color: var(--honor-wine);
   font-size: 24px;
   letter-spacing: 5px;
   text-align: center;
@@ -589,6 +1060,7 @@ h2 {
   color: var(--ink-soft);
   font-size: 13px;
   letter-spacing: 0.6px;
+  line-height: 1.65;
   text-align: center;
 }
 
@@ -596,7 +1068,7 @@ h2 {
   position: relative;
   margin-bottom: 0;
   padding-top: 16px;
-  color: var(--ink-soft);
+  color: #6c5d55;
   font-size: 14px;
   line-height: 1.85;
   text-align: center;
@@ -608,7 +1080,7 @@ h2 {
   left: calc(50% - 18px);
   width: 36px;
   height: 1px;
-  background: var(--gold);
+  background: var(--honor-gold);
   content: '';
 }
 
@@ -828,6 +1300,11 @@ a:focus-visible {
     grid-template-columns: repeat(2, 1fr);
   }
 
+  .honor-section {
+    width: 100%;
+    padding: 92px 20px 104px;
+  }
+
   .graduate-grid--compact {
     grid-template-columns: repeat(var(--graduate-count), minmax(0, calc((100% - 18px) / 2)));
   }
@@ -974,7 +1451,21 @@ a:focus-visible {
   }
 
   .honor-section {
-    padding-bottom: 88px;
+    width: 100%;
+    padding: 76px 20px 88px;
+  }
+
+  .honor-section .section-heading {
+    margin-bottom: 30px;
+    padding-top: 23px;
+  }
+
+  .honor-section .section-heading::before {
+    width: 92px;
+  }
+
+  .honor-section .section-heading::after {
+    left: 98px;
   }
 
   .graduate-grid {
@@ -987,7 +1478,107 @@ a:focus-visible {
   }
 
   .graduate-card {
-    min-height: 385px;
+    min-height: 365px;
+    padding: 18px 20px 22px;
+  }
+
+  .graduate-card::after {
+    right: 10px;
+    bottom: 10px;
+    width: 32px;
+    height: 32px;
+  }
+
+  .portrait {
+    width: 96px;
+    height: 96px;
+    margin: 24px auto 20px;
+  }
+
+  .graduate-card h3 {
+    font-size: 22px;
+    letter-spacing: 3px;
+    text-indent: 3px;
+  }
+
+  .card-honor {
+    font-size: 12px;
+  }
+
+  .card-department {
+    margin-bottom: 19px;
+  }
+
+  .letter-dialog {
+    width: calc(100% - 18px);
+    max-height: 94vh;
+  }
+
+  .letter-dialog-shell {
+    min-height: 550px;
+  }
+
+  .letter-dialog-close {
+    top: 9px;
+    right: 9px;
+    width: 34px;
+    height: 34px;
+  }
+
+  .letter-gate {
+    padding: 48px 18px 30px;
+  }
+
+  .letter-gate h2 {
+    font-size: 27px;
+    letter-spacing: 2px;
+  }
+
+  .letter-hint {
+    margin-bottom: 12px;
+    font-size: 13px;
+  }
+
+  .envelope-stage {
+    height: 165px;
+  }
+
+  .envelope {
+    width: 224px;
+    height: 136px;
+  }
+
+  .envelope-flap {
+    height: 75px;
+  }
+
+  .envelope-seal {
+    top: 51px;
+  }
+
+  .letter-input-row {
+    grid-template-columns: 1fr;
+  }
+
+  .letter-input-row button {
+    min-height: 44px;
+  }
+
+  .letter-paper {
+    inset: 25px 14px 18px;
+    padding: 43px 23px 34px;
+  }
+
+  .letter-paper h2 {
+    margin-bottom: 24px;
+    font-size: 25px;
+    letter-spacing: 2px;
+  }
+
+  .letter-paper > p:not(.letter-paper-date),
+  .letter-body {
+    font-size: 15px;
+    line-height: 1.9;
   }
 
   .memory-section {
