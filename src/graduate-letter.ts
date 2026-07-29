@@ -21,6 +21,44 @@ const getDeviceType = () => {
 
 const letterApiUrl = getLetterApiUrl()
 let initialized = false
+const HTML_CONTENT_PATTERN = /<\/?(?:h[1-3]|p|strong|b|em|i|u|s|del|br|a|code|blockquote|ul|ol|li)\b/i
+const DROPPED_HTML_TAGS = new Set([
+  'script',
+  'style',
+  'iframe',
+  'object',
+  'embed',
+  'svg',
+  'math',
+  'template',
+  'form',
+  'input',
+  'button',
+  'img',
+  'video',
+  'audio',
+])
+const ALLOWED_HTML_TAGS = new Map<string, keyof HTMLElementTagNameMap>([
+  ['h1', 'h2'],
+  ['h2', 'h2'],
+  ['h3', 'h3'],
+  ['p', 'p'],
+  ['strong', 'strong'],
+  ['b', 'strong'],
+  ['em', 'em'],
+  ['i', 'em'],
+  ['u', 'u'],
+  ['s', 's'],
+  ['del', 's'],
+  ['br', 'br'],
+  ['a', 'a'],
+  ['code', 'code'],
+  ['blockquote', 'blockquote'],
+  ['ul', 'ul'],
+  ['ol', 'ol'],
+  ['li', 'li'],
+])
+const HTML_ALIGNMENTS = new Set(['left', 'center', 'right', 'justify'])
 
 type LetterRichTextItem = {
   text: string
@@ -46,8 +84,57 @@ const getSafeHref = (value: string | null) => {
   }
 }
 
-const renderLetterRichText = (container: HTMLElement, items: LetterRichTextItem[]) => {
+const appendSafeHtmlNode = (source: Node, target: ParentNode) => {
+  if (source.nodeType === Node.TEXT_NODE) {
+    target.appendChild(document.createTextNode(source.textContent ?? ''))
+    return
+  }
+
+  if (!(source instanceof HTMLElement)) return
+
+  const sourceTag = source.tagName.toLowerCase()
+  if (DROPPED_HTML_TAGS.has(sourceTag)) return
+
+  const targetTag = ALLOWED_HTML_TAGS.get(sourceTag)
+  if (!targetTag) {
+    source.childNodes.forEach((child) => appendSafeHtmlNode(child, target))
+    return
+  }
+
+  const element = document.createElement(targetTag)
+  if (element instanceof HTMLAnchorElement) {
+    const href = getSafeHref(source.getAttribute('href'))
+    if (href) {
+      element.href = href
+      element.rel = 'noopener noreferrer'
+      if (!href.startsWith('mailto:')) element.target = '_blank'
+    }
+  }
+
+  const alignment = source.style.textAlign.toLowerCase()
+  if (HTML_ALIGNMENTS.has(alignment)) element.classList.add(`letter-html-align-${alignment}`)
+
+  source.childNodes.forEach((child) => appendSafeHtmlNode(child, element))
+  target.appendChild(element)
+}
+
+const renderLetterHtml = (container: HTMLElement, html: string) => {
+  const parsed = new DOMParser().parseFromString(html, 'text/html')
   const fragment = document.createDocumentFragment()
+  parsed.body.childNodes.forEach((child) => appendSafeHtmlNode(child, fragment))
+  container.classList.add('is-html-content')
+  container.replaceChildren(fragment)
+}
+
+const renderLetterRichText = (container: HTMLElement, items: LetterRichTextItem[]) => {
+  const rawText = items.map((item) => item.text).join('')
+  if (HTML_CONTENT_PATTERN.test(rawText)) {
+    renderLetterHtml(container, rawText)
+    return true
+  }
+
+  const fragment = document.createDocumentFragment()
+  container.classList.remove('is-html-content')
 
   items.forEach((item) => {
     if (!item || typeof item.text !== 'string') return
@@ -75,6 +162,7 @@ const renderLetterRichText = (container: HTMLElement, items: LetterRichTextItem[
   })
 
   container.replaceChildren(fragment)
+  return false
 }
 
 export const setupGraduateLetters = () => {
@@ -96,9 +184,13 @@ export const setupGraduateLetters = () => {
     const signoff = dialog.querySelector<HTMLElement>('[data-letter-signoff]')
 
     if (error) error.textContent = ''
-    if (body) body.textContent = ''
+    if (body) {
+      body.textContent = ''
+      body.classList.remove('is-html-content')
+    }
     if (signoff) signoff.textContent = '长江师范学院'
     if (paper) {
+      paper.classList.remove('has-custom-html')
       paper.hidden = true
       paper.setAttribute('aria-hidden', 'true')
     }
@@ -223,7 +315,8 @@ export const setupGraduateLetters = () => {
       dialog.querySelectorAll<HTMLElement>('[data-letter-student]').forEach((element) => {
         element.textContent = result.studentName || activeTrigger?.dataset.studentName || '同学'
       })
-      renderLetterRichText(body, result.letterRichText)
+      const hasCustomHtml = renderLetterRichText(body, result.letterRichText)
+      paper.classList.toggle('has-custom-html', hasCustomHtml)
       signoff.textContent = result.signoff?.trim() || '长江师范学院'
       paper.hidden = false
       paper.setAttribute('aria-hidden', 'false')

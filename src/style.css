@@ -965,6 +965,75 @@ h2 {
   white-space: pre-wrap;
 }
 
+.letter-paper.has-custom-html > .letter-paper-date,
+.letter-paper.has-custom-html > h2,
+.letter-paper.has-custom-html > p:not(.letter-paper-date),
+.letter-paper.has-custom-html > footer {
+  display: none;
+}
+
+.letter-paper.has-custom-html .letter-body {
+  min-height: 0;
+  margin: 0;
+}
+
+.letter-body.is-html-content {
+  white-space: normal;
+}
+
+.letter-body.is-html-content > :first-child {
+  margin-top: 0;
+}
+
+.letter-body.is-html-content > :last-child {
+  margin-bottom: 0;
+}
+
+.letter-body.is-html-content h2,
+.letter-body.is-html-content h3 {
+  color: #4b2026;
+  line-height: 1.45;
+}
+
+.letter-body.is-html-content h2 {
+  margin: 0 0 28px;
+  font-size: clamp(25px, 4vw, 34px);
+  letter-spacing: 2px;
+}
+
+.letter-body.is-html-content h3 {
+  margin: 26px 0 14px;
+  font-size: 21px;
+}
+
+.letter-body.is-html-content p {
+  margin: 0 0 20px;
+  line-height: 2;
+  text-indent: 0;
+}
+
+.letter-body.is-html-content blockquote {
+  margin: 20px 0;
+  padding: 8px 0 8px 18px;
+  color: #6a5a50;
+  border-left: 3px solid rgba(165, 33, 45, 0.35);
+}
+
+.letter-body.is-html-content ul,
+.letter-body.is-html-content ol {
+  margin: 18px 0;
+  padding-left: 2em;
+}
+
+.letter-body.is-html-content li {
+  margin-bottom: 8px;
+}
+
+.letter-html-align-left { text-align: left; }
+.letter-html-align-center { text-align: center; }
+.letter-html-align-right { text-align: right; }
+.letter-html-align-justify { text-align: justify; }
+
 .letter-body a {
   color: #8c202b;
   text-decoration-color: rgba(165, 33, 45, 0.45);

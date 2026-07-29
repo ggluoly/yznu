@@ -127,6 +127,9 @@ Notion 数据源需要使用以下字段名称和类型：
 - 信件正文支持 Notion 行内富文本：加粗、斜体、下划线、删除线、行内代码、文字颜色、背景色、换行和安全链接。
 - Worker 会通过 Notion 属性分页接口读取完整信件，长内容不会受页面查询的属性片段限制。
 - 前端不解析任意 HTML，只使用 DOM API 渲染白名单样式；链接仅允许 `https`、`http` 和 `mailto` 协议。
+- 信件正文也兼容安全 HTML 子集：`h1`、`h2`、`h3`、`p`、`strong`、`b`、`em`、`i`、`u`、`s`、`del`、`br`、`a`、`code`、`blockquote`、`ul`、`ol`、`li`。
+- HTML 仅保留 `text-align: left|center|right|justify` 和安全链接，脚本、图片、表单、iframe、事件属性及其他样式会被移除。
+- 检测到 HTML 内容时按“完整信件版式”展示，自动隐藏系统生成的标题、问候语、年份和落款，避免与 HTML 内的内容重复。
 
 ### CI 配置
 
