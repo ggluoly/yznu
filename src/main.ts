@@ -265,19 +265,14 @@ const renderPage = (currentYear: number) => {
   <dialog class="letter-dialog" id="graduate-letter-dialog" aria-labelledby="letter-dialog-title">
     <button class="letter-dialog-close" type="button" aria-label="关闭信件对话框">×</button>
     <div class="letter-dialog-shell">
+      <div class="letter-envelope-back" aria-hidden="true"></div>
+      <div class="letter-envelope-flap" aria-hidden="true"></div>
+      <div class="letter-envelope-front" aria-hidden="true"></div>
+      <div class="letter-envelope-seal" aria-hidden="true">长师</div>
       <section class="letter-gate">
         <p class="letter-kicker">A LETTER FOR YOU</p>
         <h2 id="letter-dialog-title">致<span data-letter-student>同学</span>的一封信</h2>
         <p class="letter-hint">输入你的学号，开启这封为你珍藏的信。</p>
-        <div class="envelope-stage" aria-hidden="true">
-          <div class="envelope">
-            <div class="envelope-back"></div>
-            <div class="envelope-sheet"></div>
-            <div class="envelope-front"></div>
-            <div class="envelope-flap"></div>
-            <div class="envelope-seal">长师</div>
-          </div>
-        </div>
         <form class="letter-unlock-form">
           <label for="student-number">学号</label>
           <div class="letter-input-row">
