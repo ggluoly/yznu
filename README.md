@@ -129,6 +129,8 @@ Notion 数据源需要使用以下字段名称和类型：
 - 前端不解析任意 HTML，只使用 DOM API 渲染白名单样式；链接仅允许 `https`、`http` 和 `mailto` 协议。
 - 信件正文也兼容安全 HTML 子集：`h1`、`h2`、`h3`、`p`、`strong`、`b`、`em`、`i`、`u`、`s`、`del`、`br`、`a`、`code`、`blockquote`、`ul`、`ol`、`li`。
 - HTML 仅保留 `text-align: left|center|right|justify` 和安全链接，脚本、图片、表单、iframe、事件属性及其他样式会被移除。
+- 未填写协议的域名链接会自动使用 HTTPS，例如 `<a href="www.baidu.com">点击查看</a>` 会转换为 `https://www.baidu.com/` 并正常打开。
+- HTML 链接可以填写完整的 `https://`、`http://`、`mailto:` 地址，也支持 `www.example.com` 或 `example.com/path` 形式，系统会自动补全为 `https://`。
 - 检测到 HTML 内容时按“完整信件版式”展示，自动隐藏系统生成的标题、问候语、年份和落款，避免与 HTML 内的内容重复。
 
 ### CI 配置

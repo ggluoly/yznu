@@ -117,8 +117,16 @@ const getNotionText = (property) => {
 const getSafeHref = (value) => {
   if (!value) return null
 
+  const trimmedValue = value.trim()
+  const hasExplicitProtocol = /^[a-z][a-z\d+.-]*:/i.test(trimmedValue)
+  const normalizedValue = trimmedValue.startsWith('//')
+    ? `https:${trimmedValue}`
+    : !hasExplicitProtocol && /^[^\s/]+\.[a-z]{2,}(?::\d{1,5})?(?:[/?#].*)?$/i.test(trimmedValue)
+      ? `https://${trimmedValue}`
+      : trimmedValue
+
   try {
-    const url = new URL(value)
+    const url = new URL(normalizedValue)
     return ['https:', 'http:', 'mailto:'].includes(url.protocol) ? url.toString() : null
   } catch {
     return null

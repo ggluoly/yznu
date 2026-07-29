@@ -92,6 +92,18 @@ const letterRichText = [
       color: 'yellow_background',
     },
   },
+  {
+    plain_text: '点击查看毕业珍贵瞬间',
+    href: 'www.baidu.com',
+    annotations: {
+      bold: false,
+      italic: false,
+      strikethrough: false,
+      underline: false,
+      code: false,
+      color: 'blue',
+    },
+  },
 ]
 
 const createLetterRequest = (overrides = {}) =>
@@ -301,6 +313,18 @@ test('unlocks a published student letter and queues only the student name', asyn
         underline: false,
         code: true,
         color: 'yellow_background',
+      },
+    },
+    {
+      text: '点击查看毕业珍贵瞬间',
+      href: 'https://www.baidu.com/',
+      annotations: {
+        bold: false,
+        italic: false,
+        strikethrough: false,
+        underline: false,
+        code: false,
+        color: 'blue',
       },
     },
   ])
